@@ -7,6 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 
 	<style>
+
 		body {
 			font-family: Arial, sans-serif;
 			background: #f4fbf7;
@@ -19,16 +20,6 @@
 			max-width: 1000px;
 			margin: auto;
 			padding: 40px 20px;
-		}
-
-		.logo {
-			text-align: center;
-			margin-bottom: 30px;
-		}
-
-		.logo img {
-			max-width: 240px;
-			width: 90%;
 		}
 
 		h1 {
@@ -69,10 +60,50 @@
 			background: #5a9167;
 		}
 
-		.nav {
+		.topbar {
 			text-align: center;
-			margin-bottom: 35px;
+			margin-bottom: 60px;
 		}
+
+		.logo img {
+			width: 140px;
+			margin-bottom: 20px;
+		}
+
+		.menu {
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			gap: 18px;
+		}
+
+		.menu a {
+			text-decoration: none;
+			color: #0d4d32;
+			font-weight: bold;
+			font-size: 17px;
+
+			width: 170px;
+			height: 52px;
+
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			border-radius: 10px;
+
+			background: white;
+
+			box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+
+			transition: 0.2s;
+		}
+
+		.menu a:hover {
+			background: #6ea878;
+			color: white;
+		}
+
 	</style>
 </head>
 
@@ -81,7 +112,7 @@
 	<div class="container">
 
 		<div id="nav-placeholder"></div>
-		
+
 		<h1>About Financial Clarity Pro</h1>
 
 		<div class="intro">
@@ -89,6 +120,7 @@
 		</div>
 
 		<div class="card">
+
 			<p>
 				Financial Clarity Pro was created to help business owners understand what is really happening inside their business.
 			</p>
@@ -108,9 +140,11 @@
 			<p style="text-align:center; font-size:1.4em; color:#103f2a;">
 				<strong>Clarity changes everything.</strong>
 			</p>
-			</div>
 
-			<div style="text-align:center; margin-top:40px;">
+		</div>
+
+		<div style="text-align:center; margin-top:40px;">
+
 			<a href="https://calendly.com/csilber-rsk/rsk-in-person-meeting-clone"
 				class="button"
 				target="_blank">
@@ -122,8 +156,11 @@
 			<a href="index.html" class="button" style="margin-top:20px;">
 				← Back To Homepage
 			</a>
- 		</div>	
+
+		</div>
+
 	</div>
+
 	<script>
 		fetch("nav.html")
 			.then(response => response.text())
