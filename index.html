@@ -5,150 +5,184 @@
 	<title>Financial Clarity Pro</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<link rel="stylesheet" href="assets/css/main.css" />
 
 	<style>
 		body {
+			font-family: Arial, sans-serif;
 			background: #f4fbf7;
+			margin: 0;
+			padding: 0;
+			color: #222;
 		}
 
-		.box-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-			gap: 30px;
-			margin-top: 50px;
+		.container {
+			max-width: 1100px;
+			margin: auto;
+			padding: 40px 20px;
 		}
 
-		.info-box {
-			background: white;
-			padding: 35px;
-			border-radius: 12px;
+		.logo {
 			text-align: center;
-			box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+			margin-bottom: 30px;
 		}
 
-		.info-box h2 {
-			font-size: 1.5em;
+		.logo img {
+			max-width: 240px;
+			width: 90%;
+		}
+
+		h1 {
+			text-align: center;
+			font-size: 2.8em;
+			color: #103f2a;
 			margin-bottom: 20px;
+			line-height: 1.25;
 		}
 
-		.info-box p {
-			font-size: 0.95em;
-			min-height: 80px;
+		.intro {
+			text-align: center;
+			font-size: 1.15em;
+			line-height: 1.8;
+			margin-bottom: 35px;
 		}
 
-		.arrow-btn {
+		.nav {
+			text-align: center;
+			margin-bottom: 45px;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+			gap: 25px;
+			margin-top: 40px;
+		}
+
+		.card {
+			background: white;
+			padding: 30px;
+			border-radius: 14px;
+			box-shadow: 0 5px 18px rgba(0,0,0,0.08);
+			text-align: center;
+		}
+
+		.card h2 {
+			color: #103f2a;
+			margin-bottom: 20px;
+			font-size: 1.5em;
+		}
+
+		.card p {
+			line-height: 1.7;
+			min-height: 95px;
+		}
+
+		.button {
 			display: inline-block;
-			margin-top: 15px;
-			padding: 12px 24px;
+			margin: 8px;
+			padding: 14px 28px;
 			background: #6ca67a;
-			color: white !important;
+			color: white;
 			text-decoration: none;
 			border-radius: 8px;
 			font-weight: bold;
 		}
 
-		.arrow-btn:hover {
+		.button:hover {
 			background: #5a9167;
 		}
 
-		.logo-img {
-			max-width: 260px;
-			width: 90%;
-			height: auto;
-			margin-bottom: 30px;
+		.contact-box {
+			background: white;
+			margin-top: 50px;
+			padding: 35px;
+			border-radius: 14px;
+			box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+			text-align: center;
 		}
 	</style>
 </head>
 
-<body class="is-preload">
+<body>
 
-	<div id="wrapper">
+	<div class="container">
 
-		<section id="main" class="wrapper">
+		<div class="logo">
+			<img src="images/Logo.png" alt="Financial Clarity Pro Logo">
+		</div>
 
-			<div class="inner" style="text-align:center;">
+		<h1>
+			Understanding Your Business.<br>
+			Controlling Your Money.<br>
+			Gaining Real Clarity.
+		</h1>
 
-				<img src="images/Logo.png" class="logo-img" alt="Financial Clarity Pro Logo" />
+		<div class="intro">
+			Financial business coaching focused on visibility, systems, structure,
+			and calm financial decision-making.
+		</div>
 
-				<h1>
-					Understanding Your Business.<br />
-					Controlling Your Money.<br />
-					Gaining Real Clarity.
-				</h1>
+		<div class="nav">
+			<a href="index.html" class="button">Home</a>
+			<a href="pressure-cycle.html" class="button">Pressure Cycle</a>
+			<a href="structure-before-growth.html" class="button">Structure Before Growth</a>
+			<a href="maturity-levels.html" class="button">Maturity Levels</a>
+			<a href="dashboard.html" class="button">Dashboard</a>
+		</div>
 
+		<div class="grid">
+
+			<div class="card">
+				<h2>The Business Pressure Cycle</h2>
 				<p>
-					Financial business coaching focused on visibility, systems, structure, and calm financial decision-making.
+					Revenue comes in. Pressure drops. Spending rises.
+					Cash tightens. The cycle repeats.
 				</p>
-
-				<p>
-					<strong>Chananya Silber</strong><br />
-					718-344-4328
-				</p>
-
-				<p>
-					<a href="https://calendly.com/csilber-rsk/rsk-in-person-meeting-clone"
-						class="arrow-btn"
-						target="_blank">
-						Book Consultation
-					</a>
-				</p>
-
-				<div class="box-grid">
-
-					<div class="info-box">
-						<h2>The Business Pressure Cycle</h2>
-
-						<p>
-							Revenue comes in. Pressure drops. Spending rises. Cash tightens. The cycle repeats.
-						</p>
-
-						<a href="pressure-cycle.html" class="arrow-btn">
-							Learn More →
-						</a>
-					</div>
-
-					<div class="info-box">
-						<h2>Structure Before Growth</h2>
-
-						<p>
-							Growth without structure creates larger financial problems and operational pressure.
-						</p>
-
-						<a href="structure-before-growth.html" class="arrow-btn">
-							Learn More →
-						</a>
-					</div>
-
-					<div class="info-box">
-						<h2>4 Levels of Financial Maturity</h2>
-
-						<p>
-							From survival and chaos toward stability, structure, profitability, and strategic operation.
-						</p>
-
-						<a href="maturity-levels.html" class="arrow-btn">
-							Learn More →
-						</a>
-					</div>
-
-					<div class="info-box">
-						<h2>Business Dashboard Concept</h2>
-
-						<p>
-							Weekly, monthly, quarterly, and annual financial visibility creates calmer decisions.
-						</p>
-
-						<a href="dashboard.html" class="arrow-btn">
-							Learn More →
-						</a>
-					</div>
-
-				</div>
-
+				<a href="pressure-cycle.html" class="button">Learn More →</a>
 			</div>
 
-		</section>
+			<div class="card">
+				<h2>Structure Before Growth</h2>
+				<p>
+					Growth without structure creates larger financial problems
+					and operational pressure.
+				</p>
+				<a href="structure-before-growth.html" class="button">Learn More →</a>
+			</div>
+
+			<div class="card">
+				<h2>4 Levels of Financial Maturity</h2>
+				<p>
+					From survival and chaos toward stability, structure,
+					profitability, and strategic operation.
+				</p>
+				<a href="maturity-levels.html" class="button">Learn More →</a>
+			</div>
+
+			<div class="card">
+				<h2>Business Dashboard Concept</h2>
+				<p>
+					Weekly, monthly, quarterly, and annual visibility
+					create calmer business decisions.
+				</p>
+				<a href="dashboard.html" class="button">Learn More →</a>
+			</div>
+
+		</div>
+
+		<div class="contact-box">
+			<h2>Financial Business Coaching<br>with Chananya Silber</h2>
+
+			<p>
+				<strong>Call or Text: 718-344-4328</strong>
+			</p>
+
+			<a href="https://calendly.com/csilber-rsk/rsk-in-person-meeting-clone"
+				class="button"
+				target="_blank">
+				Book Consultation
+			</a>
+		</div>
 
 	</div>
 
