@@ -16,24 +16,15 @@
 		}
 
 		.container {
-			max-width: 900px;
+			max-width: 1100px;
 			margin: auto;
 			padding: 40px 20px;
-		}
-
-		.logo {
-			text-align: center;
-			margin-bottom: 30px;
-		}
-
-		.logo img {
-			max-width: 240px;
-			width: 90%;
 		}
 
 		h1 {
 			text-align: center;
 			font-size: 2.8em;
+			color: #103f2a;
 			margin-bottom: 20px;
 		}
 
@@ -57,6 +48,7 @@
 			border-radius: 12px;
 			box-shadow: 0 5px 15px rgba(0,0,0,0.08);
 			text-align: center;
+			min-height: 120px;
 		}
 
 		.step-number {
@@ -75,14 +67,14 @@
 			background: white;
 			margin-top: 50px;
 			padding: 35px;
-			border-radius: 12px;
+			border-radius: 14px;
 			box-shadow: 0 5px 20px rgba(0,0,0,0.08);
 			text-align: center;
 		}
 
 		.button {
 			display: inline-block;
-			margin-top: 25px;
+			margin: 8px;
 			padding: 14px 28px;
 			background: #6ca67a;
 			color: white;
@@ -94,6 +86,44 @@
 		.button:hover {
 			background: #5a9167;
 		}
+
+		.topbar {
+			text-align: center;
+			margin-bottom: 60px;
+		}
+
+		.logo img {
+			width: 140px;
+			margin-bottom: 20px;
+		}
+
+		.menu {
+			display: flex;
+			justify-content: center;
+			flex-wrap: wrap;
+			gap: 18px;
+		}
+
+		.menu a {
+			text-decoration: none;
+			color: #0d4d32;
+			font-weight: bold;
+			font-size: 17px;
+			width: 170px;
+			height: 52px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 10px;
+			background: white;
+			box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+			transition: 0.2s;
+		}
+
+		.menu a:hover {
+			background: #6ea878;
+			color: white;
+		}
 	</style>
 </head>
 
@@ -101,21 +131,8 @@
 
 	<div class="container">
 
-		<div class="logo">
-			<a href="index.html">
-				<img src="images/Logo.png" alt="Financial Clarity Pro Logo">
-			</a>
-		</div>
+		<div id="nav-placeholder"></div>
 
-		<div style="text-align:center; margin-bottom:35px;">
-			<a href="index.html" class="button">Home</a>
-			<a href="about.html" class="button">About Us</a>
-			<a href="pressure-cycle.html" class="button">Pressure Cycle</a>
-			<a href="structure-before-growth.html" class="button">Structure Before Growth</a>
-			<a href="maturity-levels.html" class="button">Maturity Levels</a>
-			<a href="dashboard.html" class="button">Dashboard</a>
-		</div>
-		
 		<h1>The Business Pressure Cycle</h1>
 
 		<div class="intro">
@@ -127,64 +144,49 @@
 		<div style="text-align:center; margin-top:40px; margin-bottom:50px;">
 			<img src="images/cycle.png"
 				alt="Business Pressure Cycle"
-				style="max-width:800px; width:100%; border-radius:12px; box-shadow:0 5px 20px rgba(0,0,0,0.12);">
-		</div>	
+				style="max-width:850px; width:100%; border-radius:14px; box-shadow:0 5px 20px rgba(0,0,0,0.12);">
+		</div>
+
 		<div class="cycle-grid">
 
 			<div class="step-box">
 				<div class="step-number">1</div>
-				<div class="step-text">
-					Revenue comes in
-				</div>
+				<div class="step-text">Revenue comes in</div>
 			</div>
 
 			<div class="step-box">
 				<div class="step-number">2</div>
-				<div class="step-text">
-					Pressure decreases temporarily
-				</div>
+				<div class="step-text">Pressure decreases temporarily</div>
 			</div>
 
 			<div class="step-box">
 				<div class="step-number">3</div>
-				<div class="step-text">
-					Spending increases
-				</div>
+				<div class="step-text">Spending increases</div>
 			</div>
 
 			<div class="step-box">
 				<div class="step-number">4</div>
-				<div class="step-text">
-					Obligations accumulate
-				</div>
+				<div class="step-text">Obligations accumulate</div>
 			</div>
 
 			<div class="step-box">
 				<div class="step-number">5</div>
-				<div class="step-text">
-					Cash tightens again
-				</div>
+				<div class="step-text">Cash tightens again</div>
 			</div>
 
 			<div class="step-box">
 				<div class="step-number">6</div>
-				<div class="step-text">
-					Panic decisions begin
-				</div>
+				<div class="step-text">Panic decisions begin</div>
 			</div>
 
 			<div class="step-box">
 				<div class="step-number">7</div>
-				<div class="step-text">
-					Revenue temporarily solves pressure
-				</div>
+				<div class="step-text">Revenue temporarily solves pressure</div>
 			</div>
 
 			<div class="step-box">
 				<div class="step-number">8</div>
-				<div class="step-text">
-					The cycle repeats
-				</div>
+				<div class="step-text">The cycle repeats</div>
 			</div>
 
 		</div>
@@ -214,6 +216,14 @@
 		</div>
 
 	</div>
+
+	<script>
+		fetch("nav.html")
+			.then(response => response.text())
+			.then(data => {
+				document.getElementById("nav-placeholder").innerHTML = data;
+			});
+	</script>
 
 </body>
 
