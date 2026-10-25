@@ -71,7 +71,7 @@ main { padding-block: 22px 60px; }
 .btn.danger.solid { background: var(--red); color: var(--surface); border-color: var(--red); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn.small { padding: 4px 10px; font-size: .88rem; }
-input[type=text], input[type=search], input[type=number], input[type=time], input[type=date], select, textarea {
+input[type=text], input[type=password], input[type=search], input[type=number], input[type=time], input[type=date], select, textarea {
   border: 1px solid var(--line); background: var(--surface); border-radius: var(--r); padding: 7px 10px; min-width: 0; }
 textarea { width: 100%; resize: vertical; line-height: 1.5; }
 label.field { display: grid; gap: 4px; font-size: .86rem; font-weight: 600; color: var(--muted); }
@@ -226,7 +226,7 @@ tr.detail td { background: var(--sunk); padding: 14px 12px 16px; }
     <div class="panel upload" id="drop">
       <div>
         <h2>Check a week</h2>
-        <p>Drop the week's hours file here: your All_Emp workbook (it reads the DEnter tab) or the time clock export, .xlsx or .csv. The file stays on this computer; results are saved in this browser.</p>
+        <p>Drop the week's hours file here: your All_Emp workbook (it reads the DEnter tab) or the time clock export, .xlsx or .csv. The file stays on this computer; results are encrypted and saved on your n8n server.</p>
       </div>
       <div class="upload-actions">
         <select id="weekPick" aria-label="Week to check" hidden></select>
@@ -673,46 +673,129 @@ var Engine = (function () {
 
 </script>
 <script>
-/* Stand-alone storage: keeps schedules, rules and saved weeks in this browser (localStorage),
-   with the same calls the page uses inside Claude. Also handles file downloads and backups. */
+/* Punch Check storage on your n8n server, end-to-end encrypted.
+   - Your password never leaves this browser. It makes two keys: one to sign in to n8n, one to unlock the data key.
+   - A random data key encrypts everything before it is sent. n8n stores only locked text.
+   - Same calls as the page uses inside Claude (collection/doc/onSnapshot), plus downloads and backups. */
 (function () {
-  var KEY = "punchcheck:v1";
-  var S = {};
-  try { S = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { S = {}; }
-  var subs = [];
-  function persist() {
-    try { localStorage.setItem(KEY, JSON.stringify(S)); return true; } catch (e) {
-      // Out of space: drop the oldest full weekly reports (the list of weeks stays).
-      var reps = Object.keys(S).filter(function (k) { return k.indexOf("reports/") === 0; }).sort();
-      while (reps.length > 1) {
-        delete S[reps.shift()];
-        try { localStorage.setItem(KEY, JSON.stringify(S)); return true; } catch (e2) { /* keep pruning */ }
-      }
-      return false;
-    }
-  }
+  var K_SERVER = "punchcheck:server", K_SESS = "punchcheck:sess2";
+  var ITER = 250000;
+  var te = new TextEncoder(), td = new TextDecoder();
+  var server = "", user = "", loginKey = "", DK = null;
+  var S = {}, coreVer = 0, reports = {}, reportIds = [], subs = [], saving = Promise.resolve(), pendingSaves = 0;
+  var resolveReady, ready = new Promise(function (r) { resolveReady = r; });
+
+  function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+  function ss(k, v) { try { if (v === undefined) return sessionStorage.getItem(k); if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { return null; } }
+  function b64(buf) { var s = "", a = new Uint8Array(buf); for (var i = 0; i < a.length; i += 32768) s += String.fromCharCode.apply(null, a.subarray(i, i + 32768)); return btoa(s); }
+  function unb64(s) { var b = atob(s), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+  function hex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (x) { return x.toString(16).padStart(2, "0"); }).join(""); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function clone(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
-  function docSnap(p) { var has = Object.prototype.hasOwnProperty.call(S, p); return { id: p.split("/").pop(), exists: has, data: function () { return has ? clone(S[p]) : undefined; }, metadata: { fromCache: false, hasPendingWrites: false } }; }
+
+  /* ---------- crypto ---------- */
+  function deriveAll(u, pw, saltB64) {
+    return crypto.subtle.importKey("raw", te.encode(u.trim().toLowerCase() + "\u0000" + pw), "PBKDF2", false, ["deriveBits"]).then(function (base) {
+      return crypto.subtle.deriveBits({ name: "PBKDF2", salt: unb64(saltB64), iterations: ITER, hash: "SHA-256" }, base, 512);
+    }).then(function (bits) {
+      var a = new Uint8Array(bits);
+      return crypto.subtle.importKey("raw", a.slice(0, 32), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]).then(function (kek) {
+        return { kek: kek, loginKey: hex(a.slice(32, 64)) };
+      });
+    });
+  }
+  function encStr(k, str) { var iv = crypto.getRandomValues(new Uint8Array(12)); return crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, k, te.encode(str)).then(function (ct) { return b64(iv) + "." + b64(ct); }); }
+  function decStr(k, s) { var p = s.split("."); return crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(p[0]) }, k, unb64(p[1])).then(function (pt) { return td.decode(pt); }); }
+  function newSalt() { return b64(crypto.getRandomValues(new Uint8Array(16))); }
+  function wrapDK(kek) { return crypto.subtle.exportKey("raw", DK).then(function (raw) { return encStr(kek, b64(raw)); }); }
+  function unwrapDK(kek, wrapped) { return decStr(kek, wrapped).then(function (r) { return crypto.subtle.importKey("raw", unb64(r), { name: "AES-GCM" }, true, ["encrypt", "decrypt"]); }); }
+
+  /* ---------- server calls ---------- */
+  var ERR = {
+    login: "Wrong username or password.",
+    locked: "Too many wrong tries for this login. Wait 15 minutes and try again.",
+    setupcode: "That setup code doesn't match the one in your n8n workflow.",
+    setupcode_not_set: "Set your own SETUP_CODE in the n8n workflow first (open the “Check login and store” node), save, and try again.",
+    exists: "This server already has a login. Sign in instead.",
+    self: "You can't remove the login you're signed in with.",
+    bad: "Something was missing from the request. Reload the page and try again."
+  };
+  function api(body) {
+    return fetch(server, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .catch(function () { throw { code: "net", message: "Couldn't reach n8n at " + server + ". Check the address, and that the workflow is turned on (Active)." }; })
+      .then(function (r) {
+        if (!r.ok) throw { code: "http", message: "n8n answered with error " + r.status + ". Check that the workflow is Active and the address ends in /webhook/punch-check." };
+        return r.json().catch(function () { throw { code: "json", message: "n8n's answer wasn't readable. Check that the workflow ends with the “Reply to page” node." }; });
+      }).then(function (j) { return Array.isArray(j) ? j[0] : j; });
+  }
+  function authed(body) {
+    return api(Object.assign({ user: user, loginKey: loginKey }, body)).then(function (j) {
+      if (!j || (!j.ok && (j.error === "login" || j.error === "locked"))) { ss(K_SESS, null); screen("login", ERR[j && j.error] || ERR.login); throw { code: "login", message: "Signed out." }; }
+      return j;
+    });
+  }
+  function fail(j) { return { code: j.error, message: ERR[j.error] || ("n8n said: " + j.error) }; }
+
+  /* ---------- the store the page uses ---------- */
+  function isReport(p) { return p.indexOf("reports/") === 0; }
+  function docSnap(p) {
+    var src = isReport(p) ? reports : S, has = Object.prototype.hasOwnProperty.call(src, p);
+    return { id: p.split("/").pop(), exists: has, data: function () { return has ? clone(src[p]) : undefined; }, metadata: { fromCache: false, hasPendingWrites: pendingSaves > 0 } };
+  }
   function qs(c) {
     var docs = Object.keys(S).filter(function (k) { var a = k.split("/"); return a.length === 2 && a[0] === c; }).sort().map(docSnap);
     return { docs: docs, size: docs.length, empty: !docs.length, docChanges: function () { return []; }, metadata: { fromCache: false, hasPendingWrites: false } };
   }
   function fire() { subs.forEach(function (s) { try { s.cb(s.kind === "doc" ? docSnap(s.path) : qs(s.path)); } catch (e) { console.error(e); } }); }
   function sub(kind, path, cb) { var s = { kind: kind, path: path, cb: cb }; subs.push(s); setTimeout(function () { cb(kind === "doc" ? docSnap(path) : qs(path)); }, 0); return function () { subs = subs.filter(function (x) { return x !== s; }); }; }
+
+  function applyOp(op) { if (op.del) delete S[op.p]; else S[op.p] = clone(op.v); }
+  function saveCore(op) {
+    pendingSaves++;
+    function attempt(n) {
+      return encStr(DK, JSON.stringify(S)).then(function (v) { return authed({ action: "set", key: "core", v: v, ifVersion: coreVer }); }).then(function (j) {
+        if (j.ok) { coreVer = j.ver; return; }
+        if (j.error === "conflict" && n < 4) {      // someone else saved first: take theirs, re-apply this change
+          return decodeCore(j.doc).then(function (latest) { S = latest; coreVer = j.doc ? j.doc.ver : 0; applyOp(op); fire(); return attempt(n + 1); });
+        }
+        throw fail(j);
+      });
+    }
+    saving = saving.catch(function () {}).then(function () { return attempt(0); });
+    return saving.then(function () { pendingSaves--; }, function (e) { pendingSaves--; status(e.message, true); throw e; });
+  }
+  function decodeCore(doc) { return doc ? decStr(DK, doc.v).then(function (t) { return JSON.parse(t) || {}; }) : Promise.resolve({}); }
+
   function dref(p) {
     return {
       id: p.split("/").pop(), path: p,
-      get: function () { return Promise.resolve(docSnap(p)); },
-      set: function (v) { S[p] = clone(v); if (!persist()) return Promise.reject({ code: "quota_exceeded", message: "This browser is out of storage space. Save a backup, then remove old weeks." }); fire(); return Promise.resolve(); },
-      update: function (v) { S[p] = Object.assign({}, S[p] || {}, clone(v)); persist(); fire(); return Promise.resolve(); },
-      delete: function () { delete S[p]; persist(); fire(); return Promise.resolve(); },
+      get: function () {
+        if (!isReport(p) || reports[p]) return Promise.resolve(docSnap(p));
+        return authed({ action: "get", key: "r:" + p.slice(8) }).then(function (j) {
+          if (j.ok && j.doc) return decStr(DK, j.doc.v).then(function (t) { reports[p] = JSON.parse(t); return docSnap(p); });
+          return docSnap(p);
+        });
+      },
+      set: function (v) {
+        if (isReport(p)) {
+          reports[p] = clone(v); var id = p.slice(8); if (reportIds.indexOf(id) < 0) reportIds.push(id);
+          pendingSaves++;
+          return encStr(DK, JSON.stringify(v)).then(function (enc) { return authed({ action: "set", key: "r:" + id, v: enc }); })
+            .then(function (j) { pendingSaves--; if (!j.ok) throw fail(j); }, function (e) { pendingSaves--; throw e; });
+        }
+        var op = { p: p, v: v }; applyOp(op); fire(); return saveCore(op);
+      },
+      update: function (v) { var cur = isReport(p) ? reports[p] : S[p]; return this.set(Object.assign({}, cur || {}, v)); },
+      delete: function () {
+        if (isReport(p)) { delete reports[p]; reportIds = reportIds.filter(function (x) { return x !== p.slice(8); }); return authed({ action: "del", key: "r:" + p.slice(8) }).then(function () {}); }
+        var op = { p: p, del: true }; applyOp(op); fire(); return saveCore(op);
+      },
       onSnapshot: function (cb) { return sub("doc", p, cb); }
     };
   }
   function coll(c) {
     var q = { path: c, limit: function () { return q; }, where: function () { return q; }, orderBy: function () { return q; },
-      onSnapshot: function (cb) { return sub("coll", c, cb); },
-      get: function () { return Promise.resolve(qs(c)); },
+      onSnapshot: function (cb) { return sub("coll", c, cb); }, get: function () { return Promise.resolve(qs(c)); },
       doc: function (id) { return dref(c + "/" + (id || Math.random().toString(36).slice(2))); } };
     return q;
   }
@@ -725,10 +808,272 @@ var Engine = (function () {
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
     return Promise.resolve({ status: "saved" });
   }
-  var downloads = { save: saveFile };
-  window.claude = { use: function (n) { return Promise.resolve(n === "db" ? db : n === "downloads" ? downloads : null); } };
+  window.claude = { use: function (n) { return ready.then(function () { return n === "db" ? db : n === "downloads" ? { save: saveFile } : null; }); } };
 
-  /* backup / restore */
+  /* ---------- load + keep in sync with other devices ---------- */
+  function loadAll() {
+    return authed({ action: "list" }).then(function (j) {
+      if (!j.ok) throw fail(j);
+      reportIds = j.reports || [];
+      var core = j.docs && j.docs.core;
+      coreVer = core ? core.ver : 0;
+      return decodeCore(core).then(function (s) { S = s; return j; });
+    });
+  }
+  function poll() {
+    if (!DK || pendingSaves || document.hidden) return;
+    authed({ action: "ver", key: "core" }).then(function (j) {
+      if (j.ok && j.ver !== coreVer && !pendingSaves) {
+        return authed({ action: "get", key: "core" }).then(function (g) {
+          if (g.ok && g.doc && !pendingSaves) return decodeCore(g.doc).then(function (s) { S = s; coreVer = g.doc.ver; fire(); status("Updated with changes from another device."); });
+        });
+      }
+    }).catch(function () {});
+  }
+  setInterval(poll, 30000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) poll(); });
+  window.addEventListener("hashchange", poll);
+  window.addEventListener("focus", poll);
+
+  /* ---------- screens ---------- */
+  var css = "#lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px));overflow:auto}" +
+    "#lock .box{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:24px;display:grid;gap:14px}" +
+    "#lock h2{font-size:1.6rem}#lock p{color:var(--muted);font-size:.92rem}#lock input{width:100%}" +
+    "#lock .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}#lock .link{justify-self:start;background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-size:.88rem;text-decoration:underline}" +
+    "#lock .srv{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);word-break:break-all}" +
+    "#lockBtn{margin-left:8px;padding:3px 10px;font-size:.8rem;border-radius:6px;border:1px solid var(--head-muted);background:none;color:var(--head-ink);cursor:pointer}" +
+    "#syncMsg{font-size:.8rem;color:var(--head-muted);padding-bottom:8px}#syncMsg.err{color:#FF9B93}" +
+    ".logins li{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.logins ul{list-style:none;margin:0;padding:0}" +
+    ".logins .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}";
+  function el(html) { var d = document.createElement("div"); d.innerHTML = html; return d.firstChild; }
+  function head(t) { return "<div><p class=\"eyebrow\">Weekly Punch Check</p><h2 id=\"lockTitle\">" + t + "</h2></div>"; }
+  function srvLine() { return "<p class=\"srv\">Server: " + esc(server) + " <button class=\"link\" type=\"button\" id=\"lkSrv\">Change</button></p>"; }
+
+  function screen(mode, msg) {
+    var ov = document.getElementById("lock");
+    if (!ov) { ov = el("<div id=\"lock\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"lockTitle\"></div>"); document.body.appendChild(ov); }
+    ov.hidden = false;
+    var m = "<span class=\"msg err\" id=\"lkMsg\">" + esc(msg || "") + "</span>", h;
+    if (mode === "server") {
+      h = "<form class=\"box\" id=\"lockForm\" data-mode=\"server\">" + head("Connect to your n8n") +
+        "<p>Paste the Production URL of the Punch Check webhook from your n8n workflow. It ends in <b>/webhook/punch-check</b>. You only do this once on each computer.</p>" +
+        "<label class=\"field\">n8n webhook address<input type=\"url\" id=\"lkUrl\" placeholder=\"https://n8n.example.com/webhook/punch-check\" value=\"" + esc(server) + "\" required></label>" +
+        "<div class=\"row\"><button class=\"btn primary\" type=\"submit\" id=\"lkGo\">Connect</button>" + m + "</div></form>";
+    } else if (mode === "create") {
+      h = "<form class=\"box\" id=\"lockForm\" data-mode=\"create\">" + head("Create the first login") +
+        "<p>Your n8n server is connected and empty. Enter the setup code you put in the workflow, then pick a username and password.</p>" +
+        "<label class=\"field\">Setup code<input type=\"password\" id=\"lkCode\" autocomplete=\"off\" required></label>" +
+        "<label class=\"field\">Username<input type=\"text\" id=\"lkUser\" autocomplete=\"username\" required></label>" +
+        "<label class=\"field\">Password<input type=\"password\" id=\"lkPw\" autocomplete=\"new-password\" required minlength=\"8\"></label>" +
+        "<label class=\"field\">Type the password again<input type=\"password\" id=\"lkPw2\" autocomplete=\"new-password\" required></label>" +
+        "<p style=\"font-size:.85rem\">Write the password down. Nobody, including n8n, can unlock the data without it.</p>" +
+        "<div class=\"row\"><button class=\"btn primary\" type=\"submit\" id=\"lkGo\">Create login</button>" + m + "</div>" + srvLine() + "</form>";
+    } else if (mode === "forgot") {
+      h = "<div class=\"box\">" + head("Forgot your password?") +
+        "<p>Your data is locked with your password, so it can't be reset from here.</p>" +
+        "<p><b>If someone else has a login:</b> ask them to remove your login on the Rules tab and add you again with a new password.</p>" +
+        "<p><b>If yours is the only login:</b> the stored data can't be opened. Clear the workflow's saved data in n8n (see the setup guide), create a new login, and load your latest backup.</p>" +
+        "<div class=\"row\"><button class=\"btn\" type=\"button\" id=\"lkBack\">Back to sign in</button></div></div>";
+    } else {
+      h = "<form class=\"box\" id=\"lockForm\" data-mode=\"login\">" + head("Sign in") +
+        "<label class=\"field\">Username<input type=\"text\" id=\"lkUser\" autocomplete=\"username\" required></label>" +
+        "<label class=\"field\">Password<input type=\"password\" id=\"lkPw\" autocomplete=\"current-password\" required></label>" +
+        "<div class=\"row\"><button class=\"btn primary\" type=\"submit\" id=\"lkGo\">Sign in</button>" + m + "</div>" +
+        "<button class=\"link\" type=\"button\" id=\"lkForgot\">Forgot password?</button>" + srvLine() + "</form>";
+    }
+    ov.innerHTML = h;
+    var f = ov.querySelector("input"); if (f) f.focus();
+  }
+  function busy(on, text) { var g = document.getElementById("lkGo"), m = document.getElementById("lkMsg"); if (g) g.disabled = on; if (m) { m.className = on ? "msg" : "msg err"; m.textContent = text || ""; } }
+
+  function finishSignIn(pwForMigration) {
+    ss(K_SESS, null);
+    return crypto.subtle.exportKey("raw", DK).then(function (raw) {
+      ss(K_SESS, JSON.stringify({ server: server, user: user, loginKey: loginKey, dk: b64(raw) }));
+      return loadAll();
+    }).then(function () { return pwForMigration != null ? migrateLocal(pwForMigration) : null; }).then(function () {
+      var ov = document.getElementById("lock"); if (ov) { ov.hidden = true; ov.innerHTML = ""; }
+      addBar(); addLoginsUI();
+      fire(); resolveReady();
+    });
+  }
+
+  // Bring over data saved on this computer by the earlier, browser-only version.
+  function migrateLocal(pw) {
+    if (Object.keys(S).length || reportIds.length) return Promise.resolve();
+    var authRec = null; try { authRec = JSON.parse(ls("punchcheck:auth") || "null"); } catch (e) {}
+    var data = ls("punchcheck:data"), plain = ls("punchcheck:v1");
+    var p = Promise.resolve(null);
+    if (authRec && data) {
+      p = crypto.subtle.importKey("raw", te.encode(authRec.user.trim().toLowerCase() + "\u0000" + pw), "PBKDF2", false, ["deriveKey"]).then(function (base) {
+        return crypto.subtle.deriveKey({ name: "PBKDF2", salt: unb64(authRec.salt), iterations: authRec.iter || 250000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+      }).then(function (k) { return decStr(k, data); }).then(function (t) { return JSON.parse(t); }).catch(function () { return null; });
+    } else if (plain) { try { p = Promise.resolve(JSON.parse(plain)); } catch (e) {} }
+    return p.then(function (old) {
+      if (!old || !Object.keys(old).length) return;
+      return uploadAll(old).then(function () {
+        ls("punchcheck:data", null); ls("punchcheck:v1", null); ls("punchcheck:auth", null);
+        status("Moved the schedules saved on this computer to n8n.");
+      });
+    });
+  }
+  function uploadAll(all) {
+    var core = {}, reps = {};
+    Object.keys(all).forEach(function (k) { if (isReport(k)) reps[k] = all[k]; else core[k] = all[k]; });
+    var docs = {};
+    return encStr(DK, JSON.stringify(core)).then(function (v) {
+      docs.core = v;
+      return Promise.all(Object.keys(reps).map(function (k) { return encStr(DK, JSON.stringify(reps[k])).then(function (v2) { docs["r:" + k.slice(8)] = v2; }); }));
+    }).then(function () { return authed({ action: "replaceAll", docs: docs }); }).then(function (j) {
+      if (!j.ok) throw fail(j);
+      reports = reps;
+      return loadAll();
+    }).then(function () { fire(); });
+  }
+
+  document.addEventListener("submit", function (e) {
+    var f = e.target; if (!f || f.id !== "lockForm") return;
+    e.preventDefault();
+    var mode = f.dataset.mode;
+    if (mode === "server") {
+      var url = document.getElementById("lkUrl").value.trim().replace(/\/+$/, "");
+      if (!/^https:\/\//i.test(url)) { busy(false, "The address must start with https://"); return; }
+      if (/\/webhook-test\//.test(url)) { busy(false, "Use the Production URL (with /webhook/), not the Test URL."); return; }
+      server = url; busy(true, "Connecting…");
+      api({ action: "hello" }).then(function (j) {
+        if (!j || !j.ok) throw { message: "That address answered, but not like the Punch Check workflow. Check the URL." };
+        ls(K_SERVER, server); screen(j.setup ? "login" : "create");
+      }).catch(function (er) { busy(false, er.message); });
+      return;
+    }
+    var u = document.getElementById("lkUser").value.trim(), pw = document.getElementById("lkPw").value;
+    if (!u || !pw) { busy(false, "Enter a username and password."); return; }
+    if (mode === "create") {
+      var code = document.getElementById("lkCode").value;
+      if (pw.length < 8) { busy(false, "Use at least 8 characters."); return; }
+      if (pw !== document.getElementById("lkPw2").value) { busy(false, "The two passwords don't match."); return; }
+      busy(true, "Setting up…");
+      var salt = newSalt(), keys;
+      deriveAll(u, pw, salt).then(function (k) {
+        keys = k;
+        return crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+      }).then(function (dk) { DK = dk; return wrapDK(keys.kek); }).then(function (wrapped) {
+        return api({ action: "setup", setupCode: code, user: u, salt: salt, loginKey: keys.loginKey, wrappedKey: wrapped });
+      }).then(function (j) {
+        if (!j.ok) throw fail(j);
+        user = u; loginKey = keys.loginKey;
+        return finishSignIn(pw);
+      }).catch(function (er) { DK = null; busy(false, er.message || "Couldn't create the login."); });
+    } else {
+      busy(true, "Signing in…");
+      api({ action: "salt", user: u }).then(function (j) {
+        if (!j.ok) throw fail(j);
+        return deriveAll(u, pw, j.salt);
+      }).then(function (k) {
+        user = u; loginKey = k.loginKey;
+        return api({ action: "list", user: u, loginKey: k.loginKey }).then(function (j) {
+          if (!j.ok) throw fail(j);
+          user = j.name || u;
+          return unwrapDK(k.kek, j.wrappedKey);
+        });
+      }).then(function (dk) { DK = dk; return finishSignIn(pw); })
+        .catch(function (er) { user = ""; loginKey = ""; DK = null; busy(false, er.message || ERR.login); });
+    }
+  });
+  document.addEventListener("click", function (e) {
+    var id = e.target && e.target.id;
+    if (id === "lkForgot") screen("forgot");
+    if (id === "lkBack") screen("login");
+    if (id === "lkSrv") screen("server");
+    if (id === "lockBtn") { ss(K_SESS, null); location.reload(); }
+  });
+
+  function status(t, isErr) {
+    var m = document.getElementById("syncMsg"); if (!m) return;
+    m.textContent = t || ""; m.className = isErr ? "err" : "";
+    clearTimeout(status._t); if (!isErr) status._t = setTimeout(function () { m.textContent = ""; }, 6000);
+  }
+  function addBar() {
+    if (document.getElementById("lockBtn")) return;
+    var pill = document.getElementById("statusPill"); if (!pill) return;
+    var wrap = el("<span class=\"status-pill\" style=\"padding-bottom:8px\">Signed in as <b>" + esc(user) + "</b> · saved on n8n, encrypted<button type=\"button\" id=\"lockBtn\">Lock</button></span>");
+    pill.parentNode.insertBefore(wrap, pill.nextSibling);
+    pill.parentNode.insertBefore(el("<span id=\"syncMsg\" role=\"status\"></span>"), wrap.nextSibling);
+  }
+
+  /* ---------- Logins (Rules tab) ---------- */
+  function addLoginsUI() {
+    if (document.getElementById("loginsBox")) return;
+    var form = document.getElementById("rulesForm"); if (!form) return;
+    var box = el("<section class=\"rules-form logins\" id=\"loginsBox\" style=\"margin-top:28px\"><fieldset><legend>Logins</legend>" +
+      "<p class=\"muted\" style=\"font-size:.88rem\">Everyone with a login sees the same schedules and weeks. Each login has its own password.</p>" +
+      "<ul id=\"lgList\"><li class=\"muted\">Loading…</li></ul>" +
+      "<form id=\"lgAdd\" class=\"grid3\" novalidate><label class=\"field\">New username<input type=\"text\" id=\"lgUser\" autocomplete=\"off\"></label>" +
+      "<label class=\"field\">Password<input type=\"password\" id=\"lgPw\" autocomplete=\"new-password\"></label>" +
+      "<label class=\"field\">Password again<input type=\"password\" id=\"lgPw2\" autocomplete=\"new-password\"></label>" +
+      "<div class=\"toolbar\" style=\"grid-column:1/-1\"><button class=\"btn\" type=\"submit\">Add login</button><span class=\"msg\" id=\"lgMsg\"></span></div></form></fieldset>" +
+      "<fieldset><legend>Change my password</legend><form id=\"lgPwForm\" class=\"grid3\" novalidate>" +
+      "<label class=\"field\">New password<input type=\"password\" id=\"cpPw\" autocomplete=\"new-password\"></label>" +
+      "<label class=\"field\">New password again<input type=\"password\" id=\"cpPw2\" autocomplete=\"new-password\"></label>" +
+      "<div class=\"toolbar\" style=\"grid-column:1/-1\"><button class=\"btn\" type=\"submit\">Change password</button><span class=\"msg\" id=\"cpMsg\"></span></div></form></fieldset></section>");
+    form.parentNode.insertBefore(box, form.nextSibling);
+    refreshLogins();
+  }
+  function refreshLogins() {
+    authed({ action: "users" }).then(function (j) {
+      var list = document.getElementById("lgList"); if (!list || !j.ok) return;
+      list.innerHTML = j.users.map(function (u) {
+        var me = u.name.toLowerCase() === user.toLowerCase();
+        return "<li><b>" + esc(u.name) + "</b>" + (me ? " <span class=\"chip blue\">You</span>" : "") + "<span class=\"muted\" style=\"font-size:.85rem;margin-left:auto\">added " + esc(new Date(u.created).toLocaleDateString()) + "</span>" +
+          (me ? "" : "<button class=\"btn small danger\" type=\"button\" data-rm=\"" + esc(u.name) + "\">Remove</button>") + "</li>";
+      }).join("");
+    }).catch(function () {});
+  }
+  function msg(id, t, err) { var m = document.getElementById(id); m.className = "msg " + (err ? "err" : "ok"); m.textContent = t; }
+  document.addEventListener("submit", function (e) {
+    var f = e.target;
+    if (f && f.id === "lgAdd") {
+      e.preventDefault();
+      var n = document.getElementById("lgUser").value.trim(), p = document.getElementById("lgPw").value;
+      if (!n || p.length < 8) return msg("lgMsg", "Enter a username and a password of at least 8 characters.", true);
+      if (p !== document.getElementById("lgPw2").value) return msg("lgMsg", "The two passwords don't match.", true);
+      msg("lgMsg", "Adding…");
+      var salt = newSalt(), keys;
+      deriveAll(n, p, salt).then(function (k) { keys = k; return wrapDK(k.kek); }).then(function (w) {
+        return authed({ action: "addUser", name: n, salt: salt, newLoginKey: keys.loginKey, wrappedKey: w });
+      }).then(function (j) {
+        if (!j.ok) throw fail(j.error === "exists" ? { error: "That username is taken." } : j);
+        f.reset(); msg("lgMsg", n + " can now sign in with the password you set."); refreshLogins();
+      }).catch(function (er) { msg("lgMsg", er.code === "That username is taken." ? er.code : er.message, true); });
+    }
+    if (f && f.id === "lgPwForm") {
+      e.preventDefault();
+      var p1 = document.getElementById("cpPw").value;
+      if (p1.length < 8) return msg("cpMsg", "Use at least 8 characters.", true);
+      if (p1 !== document.getElementById("cpPw2").value) return msg("cpMsg", "The two passwords don't match.", true);
+      msg("cpMsg", "Changing…");
+      var s2 = newSalt(), k2;
+      deriveAll(user, p1, s2).then(function (k) { k2 = k; return wrapDK(k.kek); }).then(function (w) {
+        return authed({ action: "changePassword", salt: s2, newLoginKey: k2.loginKey, wrappedKey: w });
+      }).then(function (j) {
+        if (!j.ok) throw fail(j);
+        loginKey = k2.loginKey;
+        return crypto.subtle.exportKey("raw", DK).then(function (raw) { ss(K_SESS, JSON.stringify({ server: server, user: user, loginKey: loginKey, dk: b64(raw) })); });
+      }).then(function () { f.reset(); msg("cpMsg", "Password changed. Use the new one next time you sign in."); })
+        .catch(function (er) { msg("cpMsg", er.message, true); });
+    }
+  });
+  var rmPending = null;
+  document.addEventListener("click", function (e) {
+    var rm = e.target.closest && e.target.closest("[data-rm]");
+    if (rm) {
+      if (rmPending !== rm.dataset.rm) { rmPending = rm.dataset.rm; rm.textContent = "Click again to remove"; return; }
+      rmPending = null;
+      authed({ action: "delUser", name: rm.dataset.rm }).then(function (j) { if (!j.ok) throw fail(j); refreshLogins(); }).catch(function (er) { msg("lgMsg", er.message, true); });
+    }
+  });
+
+  /* ---------- backup / restore ---------- */
   function counts(data) {
     var e = 0, w = 0;
     Object.keys(data).forEach(function (k) { if (k.indexOf("employees/") === 0) e++; if (k.indexOf("reportIndex/") === 0) w++; });
@@ -739,13 +1084,19 @@ var Engine = (function () {
   document.addEventListener("click", function (e) {
     var id = e.target && e.target.id;
     if (id === "bkSave") {
-      var d = new Date(), stamp = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-      saveFile({ filename: "punch-check-backup-" + stamp + ".json", data: JSON.stringify({ app: "weekly-punch-check", version: 1, savedAt: d.toISOString(), data: S }) });
-      box("<span>Backup saved with " + counts(S) + ". Keep it somewhere safe; load it on another computer with Load backup.</span>");
+      box("<span>Collecting saved weeks from n8n…</span>");
+      Promise.all(reportIds.map(function (rid) { return dref("reports/" + rid).get(); })).then(function () {
+        var all = clone(S); Object.keys(reports).forEach(function (k) { all[k] = reports[k]; });
+        var d = new Date(), stamp = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        saveFile({ filename: "punch-check-backup-" + stamp + ".json", data: JSON.stringify({ app: "weekly-punch-check", version: 1, savedAt: d.toISOString(), data: all }) });
+        box("<span>Backup saved with " + counts(all) + ". The backup file isn't encrypted, so keep it somewhere private.</span>");
+      }).catch(function (er) { box("<span>" + esc(er.message || "Couldn't make the backup.") + "</span>"); });
     }
     if (id === "bkYes" && pending) {
-      S = pending.data; pending = null; persist(); fire();
-      box("<span>Backup loaded: " + counts(S) + ".</span>");
+      var data = pending.data; pending = null;
+      box("<span>Uploading to n8n…</span>");
+      uploadAll(data).then(function () { box("<span>Backup loaded: " + counts(data) + ". Every device signed in will get it.</span>"); })
+        .catch(function (er) { box("<span>" + esc(er.message || "Couldn't load the backup.") + "</span>"); });
     }
     if (id === "bkNo") { pending = null; document.getElementById("importBox").hidden = true; }
   });
@@ -758,10 +1109,30 @@ var Engine = (function () {
       if (!o || o.app !== "weekly-punch-check" || !o.data) { pending = null; box("<span>That file isn't a Punch Check backup.</span>"); return; }
       pending = o;
       box("<span>This backup has " + counts(o.data) + (o.savedAt ? " (saved " + new Date(o.savedAt).toLocaleDateString() + ")" : "") +
-        ". Loading it replaces the schedules, rules and saved weeks on this computer.</span>" +
+        ". Loading it replaces the schedules, rules and saved weeks on n8n for everyone.</span>" +
         "<button class=\"btn small primary\" type=\"button\" id=\"bkYes\">Replace with backup</button><button class=\"btn small\" type=\"button\" id=\"bkNo\">Cancel</button>");
     });
   });
+
+  /* ---------- start ---------- */
+  function start() {
+    var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
+    if (!window.crypto || !crypto.subtle) {
+      screen("login"); document.getElementById("lockForm").innerHTML = "<h2>Can't sign in here</h2><p>This browser blocks the security features the login needs. Open the page from https://financialclaritypro.com in Chrome, Edge or Safari.</p>";
+      return;
+    }
+    server = ls(K_SERVER) || "";
+    var sess = null; try { sess = JSON.parse(ss(K_SESS) || "null"); } catch (e) {}
+    if (sess && sess.server === server && sess.dk) {
+      user = sess.user; loginKey = sess.loginKey;
+      crypto.subtle.importKey("raw", unb64(sess.dk), { name: "AES-GCM" }, true, ["encrypt", "decrypt"]).then(function (dk) { DK = dk; return finishSignIn(null); })
+        .catch(function () { ss(K_SESS, null); screen("login"); });
+      return;
+    }
+    if (!server) { screen("server"); return; }
+    screen("login");
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();
 
 </script>
