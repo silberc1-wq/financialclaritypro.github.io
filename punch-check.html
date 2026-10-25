@@ -679,6 +679,7 @@ var Engine = (function () {
    - Same calls as the page uses inside Claude (collection/doc/onSnapshot), plus downloads and backups. */
 (function () {
   var K_SERVER = "punchcheck:server", K_SESS = "punchcheck:sess2";
+  var DEFAULT_SERVER = "https://n8n.104.248.230.123.sslip.io/webhook/punch-check";
   var ITER = 250000;
   var te = new TextEncoder(), td = new TextDecoder();
   var server = "", user = "", loginKey = "", DK = null;
@@ -1121,7 +1122,7 @@ var Engine = (function () {
       screen("login"); document.getElementById("lockForm").innerHTML = "<h2>Can't sign in here</h2><p>This browser blocks the security features the login needs. Open the page from https://financialclaritypro.com in Chrome, Edge or Safari.</p>";
       return;
     }
-    server = ls(K_SERVER) || "";
+    server = ls(K_SERVER) || DEFAULT_SERVER;
     var sess = null; try { sess = JSON.parse(ss(K_SESS) || "null"); } catch (e) {}
     if (sess && sess.server === server && sess.dk) {
       user = sess.user; loginKey = sess.loginKey;
@@ -1130,7 +1131,12 @@ var Engine = (function () {
       return;
     }
     if (!server) { screen("server"); return; }
-    screen("login");
+    screen("login", "");
+    busy(true, "Connecting\u2026");
+    api({ action: "hello" }).then(function (j) {
+      if (!j || !j.ok) throw { message: "Your n8n answered, but not like the Punch Check workflow." };
+      if (!j.setup) screen("create"); else busy(false, "");
+    }).catch(function (er) { screen("server", er.message); });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();
