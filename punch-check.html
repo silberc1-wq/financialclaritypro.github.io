@@ -9,7 +9,7 @@
   --bg: #EDF0F3; --surface: #FFFFFF; --sunk: #F5F7F9; --ink: #18212B; --muted: #5A6573; --line: #D5DBE2;
   --accent: #1F5E8C; --accent-ink: #FFFFFF; --accent-soft: #E0EBF4;
   --red: #B3261E; --red-soft: #FBE3E0; --amber: #8F5300; --amber-soft: #FBEBD3; --green: #2B7A4B; --green-soft: #DFF1E6;
-  --work: #2D6B98; --track: #E7EBEF; --head: #142231; --head-ink: #E8EEF4; --head-muted: #9DB0C3;
+  --work: #2D6B98; --track: #E7EBEF; --head: #142231; --head-ink: #E8EEF4; --head-muted: #9DB0C3; --purple: #6B3FA8; --purple-soft: #EEE6F8;
   --f-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --f-body: "Barlow", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -19,12 +19,12 @@
   --bg: #0F141A; --surface: #17202A; --sunk: #121A22; --ink: #E5EBF1; --muted: #98A5B3; --line: #2A3643;
   --accent: #74B3E3; --accent-ink: #0D1A26; --accent-soft: #1A3043;
   --red: #FF8A80; --red-soft: #3B1F1E; --amber: #F2B65E; --amber-soft: #3A2B14; --green: #74CC97; --green-soft: #173325;
-  --work: #5E9FCF; --track: #22303D; --head: #0A1016; --head-ink: #E5EBF1; --head-muted: #8597A9; color-scheme: dark; } }
+  --work: #5E9FCF; --track: #22303D; --head: #0A1016; --head-ink: #E5EBF1; --head-muted: #8597A9; --purple: #C4A2F2; --purple-soft: #2E2340; color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #0F141A; --surface: #17202A; --sunk: #121A22; --ink: #E5EBF1; --muted: #98A5B3; --line: #2A3643;
   --accent: #74B3E3; --accent-ink: #0D1A26; --accent-soft: #1A3043;
   --red: #FF8A80; --red-soft: #3B1F1E; --amber: #F2B65E; --amber-soft: #3A2B14; --green: #74CC97; --green-soft: #173325;
-  --work: #5E9FCF; --track: #22303D; --head: #0A1016; --head-ink: #E5EBF1; --head-muted: #8597A9; color-scheme: dark; }
+  --work: #5E9FCF; --track: #22303D; --head: #0A1016; --head-ink: #E5EBF1; --head-muted: #8597A9; --purple: #C4A2F2; --purple-soft: #2E2340; color-scheme: dark; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -153,6 +153,31 @@ tr.detail td { background: var(--sunk); padding: 14px 12px 16px; }
 .day .issues .it::before { content: "\2022  "; color: var(--red); }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .8rem; color: var(--muted); margin-bottom: 8px; align-items: center; }
 .legend i { display: inline-block; width: 18px; height: 10px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+
+.red { color: var(--red); }
+.chip.purple { background: var(--purple-soft); color: var(--purple); border-color: transparent; }
+.track .seg-w.long { background: repeating-linear-gradient(135deg, var(--work) 0 5px, var(--amber) 5px 8px); }
+.track .seg-x { position: absolute; top: 4px; bottom: 4px; background: var(--red); border-radius: 2px; }
+.track .x-lbl { position: absolute; top: -15px; font-size: .7rem; font-weight: 700; color: var(--red); white-space: nowrap; }
+.track .x-lbl.r { transform: translateX(-100%); }
+.legend i.long-i { background: repeating-linear-gradient(135deg, var(--work) 0 4px, var(--amber) 4px 6px); }
+.day { padding-top: 14px; }
+.day .dl .ed-btn { margin-top: 4px; padding: 2px 8px; font-size: .75rem; }
+.it-ed { color: var(--purple); }
+.day-ed { grid-column: 1 / -1; background: var(--surface); border: 1px solid var(--purple); border-radius: var(--r); padding: 12px; display: grid; gap: 8px; max-width: 640px; }
+.pe-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.pe-row label { display: inline-flex; gap: 6px; align-items: center; font-size: .88rem; font-weight: 600; color: var(--muted); }
+.grid-tbl td, .grid-tbl th { padding: 6px 8px; vertical-align: top; }
+.grid-tbl .g-name { position: sticky; left: 0; background: var(--surface); min-width: 150px; z-index: 1; }
+.grid-tbl th.g-name { background: var(--sunk); }
+.g-cell { min-width: 112px; font-size: .82rem; line-height: 1.35; }
+.g-cell.g-bad { background: var(--red-soft); }
+.g-act { font-family: var(--f-mono); font-size: .8rem; font-weight: 500; white-space: nowrap; }
+.g-act .red { font-weight: 700; }
+.g-sch { color: var(--muted); font-size: .76rem; }
+.g-note { color: var(--red); font-weight: 700; font-size: .74rem; }
+.g-ed { color: var(--purple); font-weight: 700; font-size: .72rem; }
+.g-exc { color: var(--accent); font-size: .72rem; }
 
 /* schedules */
 .dept-row td { background: var(--sunk); font-family: var(--f-display); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: .85rem; color: var(--muted); }
@@ -617,9 +642,10 @@ var Engine = (function () {
         schedWeek: emp ? weekSchedEff(emp, id, weekKey, excs) : null, workedWeek: 0
       });
 
-      var issues = [], segs = [];
+      var issues = [], segs = [], missedRaw = [];
       punches.forEach(function (x) {
         if (x.start == null || x.end == null) {
+          missedRaw.push({ in: x.startRaw || "", out: x.endRaw || "" });
           issues.push({ type: "missed", label: "Missed punch", detail: "In " + (x.startRaw || "—") + " / Out " + (x.endRaw || "—") });
           return;
         }
@@ -630,7 +656,7 @@ var Engine = (function () {
       segs.sort(function (a, b) { return a[0] - b[0]; });
       var worked = 0, gaps = [];
       segs.forEach(function (sg, i) { worked += sg[1] - sg[0]; if (i) gaps.push(sg[0] - segs[i - 1][1]); });
-      var dayRow = { id: id, date: date, punches: segs, gaps: gaps, worked: Math.round(worked / 60 * 100) / 100, issues: issues, sched: null, early: 0, late: 0, over: 0, notScheduled: false };
+      var dayRow = { id: id, date: date, punches: segs, gaps: gaps, missed: missedRaw, worked: Math.round(worked / 60 * 100) / 100, issues: issues, sched: null, early: 0, late: 0, over: 0, notScheduled: false };
 
       if (segs.length && !isExempt) {
         var firstIn = segs[0][0], lastOut = segs[segs.length - 1][1];
@@ -711,11 +737,43 @@ var Engine = (function () {
       }
     };
   }
+  /** Re-run the checks for a saved report from its (possibly edited) punches.
+   *  Keeps each day's edit history (orig + edits). */
+  function recheck(report, employees, settings, exceptions) {
+    var info = {};
+    report.people.forEach(function (p) { info[p.id] = p; });
+    var rows = [];
+    report.days.forEach(function (d) {
+      var p = info[d.id] || { name: "", dept: "" };
+      d.punches.forEach(function (sg, i) {
+        rows.push({ id: d.id, first: p.name, last: "", dept: p.dept || "", date: d.date, start: sg[0] % 1440, end: sg[1] % 1440,
+          startRaw: "p" + i + "s" + sg[0], endRaw: "p" + i + "e" + sg[1], tss: null, week: report.weekStart });
+      });
+      (d.missed || []).forEach(function (m, i) {
+        rows.push({ id: d.id, first: p.name, last: "", dept: p.dept || "", date: d.date, start: parseTime(m.in), end: parseTime(m.out),
+          startRaw: m.in || "", endRaw: m.out || "", tss: null, week: report.weekStart, _miss: i });
+      });
+    });
+    var r = analyze(rows, report.weekStart, employees, settings || report.settings, { fileName: report.fileName, exceptions: exceptions || [] });
+    var keep = {};
+    report.days.forEach(function (d) { if (d.edits && d.edits.length) keep[d.id + "|" + d.date] = { orig: d.orig, origMissed: d.origMissed, edits: d.edits }; });
+    r.days.forEach(function (d) {
+      var k = keep[d.id + "|" + d.date];
+      if (k) { d.orig = k.orig; d.origMissed = k.origMissed; d.edits = k.edits; }
+      // missed-punch detail should show the original raw text, not the internal keys
+      d.issues.forEach(function (x) { if (x.type === "missed" && /^p\d+[se]/.test(x.detail.replace(/^In /, ""))) x.detail = "Incomplete punch"; });
+    });
+    r.duplicates = report.duplicates || 0;
+    r.runAt = report.runAt;
+    r.editedAt = new Date().toISOString();
+    r.editCount = r.days.filter(function (d) { return d.edits && d.edits.length; }).length;
+    return r;
+  }
   function sum(a, k) { return a.reduce(function (s, x) { return s + (x[k] || 0); }, 0); }
 
   return {
     DAYS: DAYS, DAY_FULL: DAY_FULL, DEFAULT_SETTINGS: DEFAULT_SETTINGS,
-    effSched: effSched, weekSchedEff: weekSchedEff,
+    effSched: effSched, weekSchedEff: weekSchedEff, recheck: recheck,
     readFile: readFile, readScheduleTab: readScheduleTab, analyze: analyze, rowsFromGrid: rowsFromGrid, groupWeeks: groupWeeks,
     parseTime: parseTime, hhmmToMin: hhmmToMin, minToHHMM: minToHHMM, fmtMin: fmtMin, fmtHM: fmtHM,
     fmtDate: fmtDate, addDays: addDays, weekday: weekday, schedDay: schedDay, weekSched: weekSched, titleCase: titleCase
@@ -861,6 +919,19 @@ var Engine = (function () {
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
     return Promise.resolve({ status: "saved" });
   }
+  // Print: open PDFs in a new tab (ready to print); fall back to a download if pop-ups are blocked.
+  window.punchPreOpen = function () {
+    try { var w = window.open("", "_blank"); if (w) w.document.write("<p style=\"font-family:sans-serif;padding:20px\">Preparing your PDF…</p>"); return w; } catch (e) { return null; }
+  };
+  window.punchOpenPdf = function (blob, name, w) {
+    if (w && !w.closed) { w.location.href = URL.createObjectURL(blob); return Promise.resolve({ status: "saved" }); }
+    return saveFile({ filename: name, data: blob });
+  };
+  window.punchOpenHtml = function (html, name) {
+    var w = null; try { w = window.open("", "_blank"); } catch (e) {}
+    if (w) { w.document.open(); w.document.write(html); w.document.close(); return; }
+    saveFile({ filename: name, data: html }); // pop-ups blocked: download it instead
+  };
   window.claude = { use: function (n) { return ready.then(function () { return n === "db" ? db : n === "downloads" ? { save: saveFile } : null; }); } };
 
   /* ---------- load + keep in sync with other devices ---------- */
@@ -946,6 +1017,7 @@ var Engine = (function () {
       return loadAll();
     }).then(function () { return pwForMigration != null ? migrateLocal(pwForMigration) : null; }).then(function () {
       var ov = document.getElementById("lock"); if (ov) { ov.hidden = true; ov.innerHTML = ""; }
+      window.punchUser = user;
       addBar(); addLoginsUI();
       fire(); resolveReady();
     });
@@ -1212,6 +1284,7 @@ var Engine = (function () {
     xlsx: ["https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js", function () { return window.XLSX; }],
     exceljs: ["https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js", function () { return window.ExcelJS; }],
     jspdf: ["https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", function () { return window.jspdf; }]
+
   };
   var libPromises = {};
   function loadLib(k) {
@@ -1233,7 +1306,7 @@ var Engine = (function () {
     settings: Object.assign({}, E.DEFAULT_SETTINGS, { handoutRules: DEFAULT_RULES.slice() }),
     settingsLoaded: false, rulesDirty: false,
     index: [], report: null, upload: null, loadingSaved: false, autoOpened: false,
-    filter: "flagged", dept: "", q: "", open: {},
+    filter: "flagged", dept: "", q: "", open: {}, repView: "people", editDay: null,
     view: "report", edit: null,
     exceptions: [], excLoaded: false, excEdit: null, excShowOld: false
   };
@@ -1481,7 +1554,9 @@ var Engine = (function () {
     h += "<div class=\"rep-head\"><div><p class=\"eyebrow\">Week</p><h2>" + esc(E.fmtDate(r.weekStart, true)) + " – " + esc(E.fmtDate(r.weekEnd, true)) + "</h2>" +
       "<p class=\"meta\">" + esc(r.fileName || "Saved week") + " · checked " + esc(run.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })) + " · punches " + esc(E.fmtDate(r.firstDate)) + "–" + esc(E.fmtDate(r.lastDate)) + "</p></div>" +
       "<div class=\"rep-actions\">" + (savedOpts && st.db ? "<select id=\"savedPick\" aria-label=\"Saved weeks\">" + savedOpts + "</select>" : "") +
-      "<button class=\"btn primary\" id=\"xlsxBtn\" type=\"button\"" + (st.dl ? "" : " disabled title=\"Downloads aren't available in this view\"") + ">Download Excel report</button></div></div>";
+      "<button class=\"btn\" id=\"printWeekBtn\" type=\"button\">Print week</button>" +
+      (r.days.some(function (d) { return d.edits && d.edits.length; }) ? "<button class=\"btn\" id=\"printEditsBtn\" type=\"button\">Print edits (" + r.days.filter(function (d) { return d.edits && d.edits.length; }).length + ")</button>" : "") +
+      "<button class=\"btn primary\" id=\"xlsxBtn\" type=\"button\"" + (st.dl || window.punchOpenPdf ? "" : " disabled title=\"Downloads aren't available in this view\"") + ">Download Excel</button></div></div>";
 
     var notes = "";
     if (r.duplicates) notes += "<div class=\"notice warn\"><span><b>" + plural(r.duplicates, "punch was", "punches were") + " in the file twice</b> (the week was probably pasted into DEnter two times). Each punch is counted once here, but your Excel Each day tab will show double hours.</span></div>";
@@ -1504,14 +1579,14 @@ var Engine = (function () {
       tile("flagged", "People flagged", T.flagged, "of " + T.people + " who worked", T.flagged ? "bad" : "") +
       tile("stretch", T.stretch === 1 ? "6+ hrs no break" : "6+ hrs no break", T.stretch, plural(stretchPeople, "person", "people"), T.stretch ? "bad" : "") +
       tile("meal", "Coffee / dinner short", T.coffee + T.dinner, T.coffee + " coffee · " + T.dinner + " dinner" + (T.missed ? " · " + T.missed + " missed punch" : ""), (T.coffee + T.dinner) ? "bad" : "") +
-      tile("over", "Over scheduled hours", T.overDays, hrs(T.overHours) + " hrs · " + plural(T.overPeople, "person", "people"), T.overDays ? "warn" : "") +
-      tile("early", "Came in early", T.earlyDays, plural(T.earlyPeople, "person", "people"), T.earlyDays ? "warn" : "") +
-      tile("late", "Left late", T.lateDays, plural(T.latePeople, "person", "people"), T.lateDays ? "warn" : "") +
+      tile("over", "Over scheduled hours", T.overDays, hrs(T.overHours) + " hrs · " + plural(T.overPeople, "person", "people"), T.overDays ? "bad" : "") +
+      tile("early", "Came in early", T.earlyDays, plural(T.earlyPeople, "person", "people"), T.earlyDays ? "bad" : "") +
+      tile("late", "Left late", T.lateDays, plural(T.latePeople, "person", "people"), T.lateDays ? "bad" : "") +
       "</div>";
 
     var depts = {}; r.people.forEach(function (p) { if (p.dept) depts[p.dept] = 1; });
     var F = [["flagged", "Flagged"], ["breaks", "Break rules"], ["over", "Over hours"], ["early", "Early"], ["late", "Late"], ["everyone", "Everyone"]];
-    h += "<div class=\"filters\"><div class=\"seg\" role=\"group\" aria-label=\"Show\">" + F.map(function (f) {
+    h += "<div class=\"filters\"><div class=\"seg\" role=\"group\" aria-label=\"View\"><button type=\"button\" data-view2=\"people\" aria-pressed=\"" + (st.repView === "people") + "\">People</button><button type=\"button\" data-view2=\"grid\" aria-pressed=\"" + (st.repView === "grid") + "\">Week grid</button></div><div class=\"seg\" role=\"group\" aria-label=\"Show\">" + F.map(function (f) {
       var pressed = st.filter === f[0] || (f[0] === "breaks" && (st.filter === "stretch" || st.filter === "meal"));
       return "<button type=\"button\" data-filter=\"" + f[0] + "\" aria-pressed=\"" + pressed + "\">" + f[1] + "</button>";
     }).join("") + "</div>" +
@@ -1541,12 +1616,14 @@ var Engine = (function () {
     var el = $("#repTable"), r = st.report;
     if (!r) { el.innerHTML = ""; return; }
     var list = r.people.filter(personMatch).sort(function (a, b) {
+      if (st.repView === "grid") return (a.dept || "~").localeCompare(b.dept || "~") || a.name.localeCompare(b.name);
       if (st.filter === "over") return b.overHours - a.overHours;
       if (st.filter === "early") return b.earlyDays - a.earlyDays;
       if (st.filter === "late") return b.lateDays - a.lateDays;
       return score(b) - score(a) || a.name.localeCompare(b.name);
     });
     if (!list.length) { el.innerHTML = "<div class=\"panel empty\"><p>Nobody matches this filter.</p></div>"; return; }
+    if (st.repView === "grid") { el.innerHTML = gridHtml(list); return; }
     var rows = list.map(function (p) {
       var chips = [];
       if (p.exempt) chips.push("<span class=\"chip\">Breaks not checked</span>");
@@ -1555,19 +1632,67 @@ var Engine = (function () {
       if (p.dinner) chips.push("<span class=\"chip red\">Dinner ×" + p.dinner + "</span>");
       if (p.missed) chips.push("<span class=\"chip red\">Missed punch ×" + p.missed + "</span>");
       if (!chips.length) chips.push("<span class=\"chip green\">OK</span>");
-      var over = !p.inSchedule ? "<span class=\"muted\">No schedule</span>" : p.overDays ? "<span class=\"cell-warn\">" + hrs(p.overHours) + " hrs</span> <span class=\"muted\">· " + plural(p.overDays, "day") + "</span>" : "<span class=\"muted\">—</span>";
+      var edited = r.days.some(function (d) { return d.id === p.id && d.edits && d.edits.length; });
+      var over = !p.inSchedule ? "<span class=\"muted\">No schedule</span>" : p.overDays ? "<span class=\"cell-bad\">" + hrs(p.overHours) + " hrs</span> <span class=\"muted\">· " + plural(p.overDays, "day") + "</span>" : "<span class=\"muted\">—</span>";
       var open = !!st.open[p.id];
-      var tr = "<tr><td><button type=\"button\" class=\"who\" data-toggle=\"" + esc(p.id) + "\" aria-expanded=\"" + open + "\"><span class=\"car\"></span>" + esc(p.name) + " <span class=\"idtag\">#" + esc(p.id) + "</span></button></td>" +
+      var tr = "<tr><td><button type=\"button\" class=\"who\" data-toggle=\"" + esc(p.id) + "\" aria-expanded=\"" + open + "\"><span class=\"car\"></span>" + esc(p.name) + " <span class=\"idtag\">#" + esc(p.id) + "</span></button>" + (edited ? " <span class=\"chip purple\">Edited</span>" : "") + "</td>" +
         "<td>" + esc(p.dept || "—") + "</td><td><div class=\"chips\">" + chips.join("") + "</div></td>" +
         "<td class=\"num\">" + over + "</td>" +
-        "<td class=\"num\">" + (p.earlyDays ? "<span class=\"cell-warn\">" + p.earlyDays + "</span>" : "<span class=\"muted\">—</span>") + "</td>" +
-        "<td class=\"num\">" + (p.lateDays ? "<span class=\"cell-warn\">" + p.lateDays + "</span>" : "<span class=\"muted\">—</span>") + "</td>" +
+        "<td class=\"num\">" + (p.earlyDays ? "<span class=\"cell-bad\">" + p.earlyDays + "</span>" : "<span class=\"muted\">—</span>") + "</td>" +
+        "<td class=\"num\">" + (p.lateDays ? "<span class=\"cell-bad\">" + p.lateDays + "</span>" : "<span class=\"muted\">—</span>") + "</td>" +
         "<td class=\"num\">" + hrs(p.workedWeek) + (p.schedWeek != null ? " <span class=\"muted\">/ " + hrs(p.schedWeek) + "</span>" : "") + "</td></tr>";
       if (open) tr += "<tr class=\"detail\"><td colspan=\"7\">" + detailHtml(p) + "</td></tr>";
       return tr;
     }).join("");
-    el.innerHTML = "<p class=\"muted\" style=\"margin-bottom:8px;font-size:.9rem\">" + plural(list.length, "person", "people") + ". Click a name to see each day.</p>" +
+    el.innerHTML = "<p class=\"muted\" style=\"margin-bottom:8px;font-size:.9rem\">" + plural(list.length, "person", "people") + ". Click a name to see each day and edit times.</p>" +
       "<div class=\"tbl-wrap\"><table><thead><tr><th>Employee</th><th>Department</th><th>Break rules</th><th class=\"num\">Over schedule</th><th class=\"num\">Early days</th><th class=\"num\">Late days</th><th class=\"num\">Worked / sched hrs</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
+  }
+
+  /* ---- helpers shared by the grid, details and print ---- */
+  function weekDates(r) { var out = []; for (var i = 0; i < 7; i++) out.push(E.addDays(r.weekStart, i)); return out; }
+  function dayMap(r) { var m = {}; r.days.forEach(function (d) { m[d.id + "|" + d.date] = d; }); return m; }
+  function schedFor(r, p, date, day) {
+    if (day && (day.sched || day.notScheduled)) return { sched: day.sched, note: day.exception || null };
+    var emp = st.employees[p.id];
+    if (!emp) return { sched: null, note: null, none: true };
+    return E.effSched(emp, p.id, date, r.exceptions || []);
+  }
+  function punchTxt(segs) { return segs.map(function (s) { return E.fmtMin(s[0]) + "–" + E.fmtMin(s[1]); }).join(", ") || "none"; }
+
+  function gridHtml(list) {
+    var r = st.report, dates = weekDates(r), dm = dayMap(r);
+    var head = "<tr><th class=\"g-name\">Employee</th>" + dates.map(function (d) { var x = E.fmtDate(d).split("/"); return "<th>" + DAYS[E.weekday(d)] + " " + x[0] + "/" + x[1] + "</th>"; }).join("") + "<th class=\"num\">Worked / sched</th></tr>";
+    var lastDept = null, body = "";
+    list.forEach(function (p) {
+      if (p.dept !== lastDept) { lastDept = p.dept; body += "<tr class=\"dept-row\"><td colspan=\"9\">" + esc(p.dept || "No department") + "</td></tr>"; }
+      body += "<tr><td class=\"g-name\"><b>" + esc(p.name) + "</b><br><span class=\"idtag\">#" + esc(p.id) + "</span></td>";
+      dates.forEach(function (date) {
+        var d = dm[p.id + "|" + date], sc = schedFor(r, p, date, d), s = sc.sched;
+        var schedLine = s ? "Sched " + shortT(s.from) + "–" + shortT(s.till) : (sc.none ? "No schedule" : "Off");
+        var cls = "", h = "";
+        if (d && d.punches.length) {
+          var a = d.punches[0][0], b = d.punches[d.punches.length - 1][1];
+          h += "<div class=\"g-act\"><span class=\"" + (d.early || d.notScheduled ? "red" : "") + "\">" + shortT(a) + "</span>–<span class=\"" + (d.late || d.notScheduled ? "red" : "") + "\">" + shortT(b) + "</span> <span class=\"muted\">" + hrs(d.worked) + "h</span></div>";
+          var notes = [];
+          if (d.early) notes.push("Early " + minsTxt(d.early));
+          if (d.late) notes.push("Late " + minsTxt(d.late));
+          if (d.over) notes.push("+" + hrs(d.over) + "h");
+          if (d.notScheduled) { notes.push("Not scheduled"); cls = "g-bad"; }
+          if (d.issues.some(function (i) { return i.type === "missed"; })) notes.push("Missed punch");
+          h += "<div class=\"g-sch\">" + schedLine + "</div>" + (notes.length ? "<div class=\"g-note\">" + notes.join(" · ") + "</div>" : "");
+          if (d.edits && d.edits.length) h += "<div class=\"g-ed\">Edited</div>";
+        } else if (d && d.issues.length) {
+          h += "<div class=\"g-note\">Missed punch</div><div class=\"g-sch\">" + schedLine + "</div>";
+        } else {
+          h += "<div class=\"muted\">" + (s ? "No punches" : "—") + "</div><div class=\"g-sch\">" + schedLine + "</div>";
+        }
+        if (sc.note) h += "<div class=\"g-exc\">" + esc(sc.note) + "</div>";
+        body += "<td class=\"g-cell " + cls + "\">" + h + "</td>";
+      });
+      body += "<td class=\"num\">" + hrs(p.workedWeek) + (p.schedWeek != null ? "<br><span class=\"muted\">/ " + hrs(p.schedWeek) + "</span>" : "") + "</td></tr>";
+    });
+    return "<p class=\"muted\" style=\"margin-bottom:8px;font-size:.9rem\">" + plural(list.length, "person", "people") + ". <span class=\"red\">Red</span> = came in before or left after the schedule. Print week makes a PDF of exactly this list.</p>" +
+      "<div class=\"tbl-wrap\"><table class=\"grid-tbl\"><thead>" + head + "</thead><tbody>" + body + "</tbody></table></div>";
   }
 
   function detailHtml(p) {
@@ -1578,51 +1703,216 @@ var Engine = (function () {
       d.punches.forEach(function (s) { lo = Math.min(lo, s[0]); hi = Math.max(hi, s[1]); });
       if (d.sched) { lo = Math.min(lo, d.sched.from); hi = Math.max(hi, d.sched.till); }
     });
-    if (!isFinite(lo)) return "<p class=\"muted\">No complete punches this week.</p>";
+    if (!isFinite(lo)) { lo = 7 * 60; hi = 19 * 60; }
     lo = Math.floor(lo / 60) * 60; hi = Math.ceil(hi / 60) * 60;
     if (hi - lo < 360) hi = lo + 360;
     var span = hi - lo, step = span > 720 ? 120 : 60;
     function pct(m) { return ((m - lo) / span * 100).toFixed(2) + "%"; }
+    function wid(a, b) { return Math.max((b - a) / span * 100, 0.3).toFixed(2) + "%"; }
     var ticks = "";
     for (var t = lo; t <= hi; t += step) ticks += "<span style=\"left:" + pct(t) + "\">" + shortT(t) + "</span>";
-    var out = "<div class=\"legend\"><span><i style=\"background:var(--work)\"></i>Worked</span><span><i style=\"background:var(--red)\"></i>6+ hrs without a break</span><span><i style=\"border:1.5px dashed var(--accent);height:12px\"></i>Scheduled</span><span><i style=\"background:var(--track)\"></i>Punched out</span></div>";
+    var out = "<div class=\"legend\"><span><i style=\"background:var(--work)\"></i>Worked, on schedule</span><span><i style=\"background:var(--red)\"></i>Before or after the schedule</span><span><i class=\"long-i\"></i>6+ hrs without a break</span><span><i style=\"border:1.5px dashed var(--accent);height:12px\"></i>Scheduled</span></div>";
     out += "<div style=\"overflow-x:auto\"><div class=\"days\"><div class=\"day\"><span></span><div class=\"axis\">" + ticks + "</div><span></span></div>";
+    var minBreak = Number((r.settings || {}).minBreakMin || 20), maxS = Number((r.settings || {}).maxStretchHours || 6) * 60;
+    var grace = Number((r.settings || {}).graceMin || 0);
     days.forEach(function (d) {
-      var stretchBad = d.issues.some(function (i) { return i.type === "stretch"; });
-      // which segments belong to a 6h+ stretch
-      var bad = {};
-      if (stretchBad) {
-        var minBreak = Number((r.settings || {}).minBreakMin || 20), maxS = Number((r.settings || {}).maxStretchHours || 6) * 60;
+      var key = d.id + "|" + d.date;
+      var long = {};
+      if (d.issues.some(function (i) { return i.type === "stretch"; }) && d.punches.length) {
         var groups = [[0]];
-        for (var i = 1; i < d.punches.length; i++) {
-          if (d.gaps[i - 1] >= minBreak) groups.push([i]); else groups[groups.length - 1].push(i);
-        }
-        groups.forEach(function (g) {
-          var len = d.punches[g[g.length - 1]][1] - d.punches[g[0]][0];
-          if (len >= maxS) g.forEach(function (ix) { bad[ix] = 1; });
-        });
+        for (var i = 1; i < d.punches.length; i++) { if (d.gaps[i - 1] >= minBreak) groups.push([i]); else groups[groups.length - 1].push(i); }
+        groups.forEach(function (g) { if (d.punches[g[g.length - 1]][1] - d.punches[g[0]][0] >= maxS) g.forEach(function (ix) { long[ix] = 1; }); });
       }
-      var track = "<div class=\"track\">" + (d.sched ? "<div class=\"sch\" style=\"left:" + pct(d.sched.from) + ";width:" + ((d.sched.till - d.sched.from) / span * 100).toFixed(2) + "%\"></div>" : "") +
-        d.punches.map(function (s, i) {
-          return "<div class=\"seg-w" + (bad[i] ? " bad" : "") + "\" style=\"left:" + pct(s[0]) + ";width:" + Math.max((s[1] - s[0]) / span * 100, 0.4).toFixed(2) + "%\" title=\"" + E.fmtMin(s[0]) + " – " + E.fmtMin(s[1]) + "\"></div>";
-        }).join("") + "</div>";
+      var track = "<div class=\"track\">" + (d.sched ? "<div class=\"sch\" style=\"left:" + pct(d.sched.from) + ";width:" + wid(d.sched.from, d.sched.till) + "\"></div>" : "");
+      d.punches.forEach(function (s, i) {
+        track += "<div class=\"seg-w" + (long[i] ? " long" : "") + "\" style=\"left:" + pct(s[0]) + ";width:" + wid(s[0], s[1]) + "\" title=\"" + E.fmtMin(s[0]) + " – " + E.fmtMin(s[1]) + "\"></div>";
+        if (p.inSchedule) {
+          if (d.notScheduled) track += "<div class=\"seg-x\" style=\"left:" + pct(s[0]) + ";width:" + wid(s[0], s[1]) + "\"></div>";
+          else if (d.sched) {
+            if (d.early && s[0] < d.sched.from) track += "<div class=\"seg-x\" style=\"left:" + pct(s[0]) + ";width:" + wid(s[0], Math.min(s[1], d.sched.from)) + "\" title=\"Before schedule\"></div>";
+            if (d.late && s[1] > d.sched.till) track += "<div class=\"seg-x\" style=\"left:" + pct(Math.max(s[0], d.sched.till)) + ";width:" + wid(Math.max(s[0], d.sched.till), s[1]) + "\" title=\"After schedule\"></div>";
+          }
+        }
+      });
+      if (d.early && d.sched) track += "<span class=\"x-lbl\" style=\"left:" + pct(d.punches[0][0]) + "\">" + minsTxt(d.early) + " early</span>";
+      if (d.late && d.sched) track += "<span class=\"x-lbl r\" style=\"left:" + pct(d.punches[d.punches.length - 1][1]) + "\">" + minsTxt(d.late) + " late</span>";
+      track += "</div>";
       var inT = d.punches.length ? E.fmtMin(d.punches[0][0]) : "—", outT = d.punches.length ? E.fmtMin(d.punches[d.punches.length - 1][1]) : "—";
-      var txt = "<b>" + inT + " – " + outT + "</b> · " + hrs(d.worked) + " hrs<br>" +
-        (d.sched ? "Sched " + E.fmtMin(d.sched.from) + " – " + E.fmtMin(d.sched.till) + " · " + hrs(d.sched.hours) + " hrs" : (p.inSchedule ? "Not scheduled this day" : "No schedule on file")) +
+      var txt = "<b class=\"" + (d.early || d.notScheduled ? "red" : "") + "\">" + inT + "</b> – <b class=\"" + (d.late || d.notScheduled ? "red" : "") + "\">" + outT + "</b> · " + hrs(d.worked) + " hrs<br>" +
+        (d.sched ? "Sched " + E.fmtMin(d.sched.from) + " – " + E.fmtMin(d.sched.till) + " · " + hrs(d.sched.hours) + " hrs" : (p.inSchedule ? "<span class=\"red\">Not scheduled this day</span>" : "No schedule on file")) +
         (d.gaps.length ? "<br>Breaks: " + d.gaps.map(function (g) { return Math.round(g) + " min"; }).join(", ") : "");
       var tags = [];
-      if (d.early) tags.push("<span class=\"chip amber\">Early " + minsTxt(d.early) + "</span>");
-      if (d.late) tags.push("<span class=\"chip amber\">Late " + minsTxt(d.late) + "</span>");
-      if (d.over) tags.push("<span class=\"chip amber\">Over " + hrs(d.over) + " hrs</span>");
-      if (d.notScheduled) tags.push("<span class=\"chip amber\">Not scheduled</span>");
-      if (d.exception) tags.unshift("<span class=\"chip blue\">Exception: " + esc(d.exception) + "</span>");
+      if (d.exception) tags.push("<span class=\"chip blue\">Exception: " + esc(d.exception) + "</span>");
+      if (d.edits && d.edits.length) tags.push("<span class=\"chip purple\">Edited</span>");
+      if (d.early) tags.push("<span class=\"chip red\">Early " + minsTxt(d.early) + "</span>");
+      if (d.late) tags.push("<span class=\"chip red\">Late " + minsTxt(d.late) + "</span>");
+      if (d.over) tags.push("<span class=\"chip red\">Over " + hrs(d.over) + " hrs</span>");
+      if (d.notScheduled) tags.push("<span class=\"chip red\">Not scheduled</span>");
       var dd = E.fmtDate(d.date).split("/");
-      out += "<div class=\"day\"><div class=\"dl\">" + DAYS[E.weekday(d.date)] + "<span>" + dd[0] + "/" + dd[1] + "</span></div>" + track + "<div class=\"dt\">" + txt + "</div>" +
-        ((d.issues.length || tags.length) ? "<div class=\"issues\">" + (tags.length ? "<div class=\"chips\" style=\"margin-bottom:2px\">" + tags.join("") + "</div>" : "") +
-          d.issues.map(function (i) { return "<div class=\"it\"><b>" + esc(i.label) + ":</b> " + esc(i.detail) + "</div>"; }).join("") + "</div>" : "") + "</div>";
+      var editLine = "";
+      if (d.edits && d.edits.length) {
+        var last = d.edits[d.edits.length - 1];
+        editLine = "<div class=\"it-ed\"><b>Edited:</b> " + esc(punchTxt(d.orig || last.from)) + " → " + esc(punchTxt(d.punches)) +
+          (last.by ? " · by " + esc(last.by) : "") + " · " + esc(new Date(last.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })) + (last.note ? " · " + esc(last.note) : "") + "</div>";
+      }
+      out += "<div class=\"day\"><div class=\"dl\">" + DAYS[E.weekday(d.date)] + "<span>" + dd[0] + "/" + dd[1] + "</span><br><button type=\"button\" class=\"btn small ed-btn\" data-editday=\"" + esc(key) + "\">Edit times</button></div>" + track + "<div class=\"dt\">" + txt + "</div>" +
+        "<div class=\"issues\">" + (tags.length ? "<div class=\"chips\" style=\"margin-bottom:2px\">" + tags.join("") + "</div>" : "") + editLine +
+        d.issues.map(function (i) { return "<div class=\"it\"><b>" + esc(i.label) + ":</b> " + esc(i.detail) + "</div>"; }).join("") + "</div>" +
+        (st.editDay === key ? dayEditorHtml(d) : "") + "</div>";
     });
     out += "</div></div>";
     return out;
+  }
+
+  /* ---- editing a day's punches ---- */
+  function dayEditorHtml(d) {
+    var rows = (d.punches.length ? d.punches : [[null, null]]).map(function (s) { return punchRowHtml(s[0], s[1]); }).join("");
+    return "<div class=\"day-ed\" data-edfor=\"" + esc(d.id + "|" + d.date) + "\"><b>Edit punches for " + DAYS[E.weekday(d.date)] + " " + E.fmtDate(d.date) + "</b>" +
+      (d.missed && d.missed.length ? "<p class=\"muted\" style=\"font-size:.85rem\">This day has an incomplete punch from the time clock. Add the correct in and out times below; saving removes the incomplete one.</p>" : "") +
+      "<div class=\"pe-rows\">" + rows + "</div>" +
+      "<button type=\"button\" class=\"btn small\" data-pe=\"add\">+ Add punch</button>" +
+      "<label class=\"field\" style=\"margin-top:8px\">Reason for the change<input type=\"text\" class=\"pe-note\" placeholder=\"e.g. Came early without approval, paid from 8:00\"></label>" +
+      "<div class=\"toolbar\" style=\"margin-top:8px\"><button type=\"button\" class=\"btn primary small\" data-pe=\"save\">Save changes</button><button type=\"button\" class=\"btn small\" data-pe=\"cancel\">Cancel</button>" +
+      (d.orig ? "<button type=\"button\" class=\"btn small\" data-pe=\"restore\">Restore original times</button>" : "") + "<span class=\"msg pe-msg\"></span></div>" +
+      "<p class=\"muted\" style=\"font-size:.82rem;margin-top:4px\">An Out time earlier than the In time means after midnight.</p></div>";
+  }
+  function punchRowHtml(a, b) {
+    function v(m) { return m == null ? "" : E.minToHHMM(m); }
+    return "<div class=\"pe-row\"><label>In <input type=\"time\" class=\"pe-in\" value=\"" + v(a) + "\"></label><label>Out <input type=\"time\" class=\"pe-out\" value=\"" + v(b) + "\"></label><button type=\"button\" class=\"btn small danger\" data-pe=\"rm\" aria-label=\"Remove punch\">Remove</button></div>";
+  }
+  function currentUser() { return window.punchUser || ""; }
+  function applyDayEdit(key, newSegs, note, restore) {
+    var r = JSON.parse(JSON.stringify(st.report));
+    var d = r.days.filter(function (x) { return x.id + "|" + x.date === key; })[0];
+    if (!d) return Promise.reject(new Error("Day not found."));
+    if (restore) {
+      d.edits = (d.edits || []).concat([{ at: new Date().toISOString(), by: currentUser(), from: d.punches, to: d.orig, note: "Restored original times" }]);
+      d.punches = d.orig; d.missed = d.origMissed || d.missed;
+      d.edits.restored = true;
+      var hist = d.edits; d.orig = undefined; d.origMissed = undefined;
+      // keep the history but mark the day as no longer edited
+      d.edits = []; d.history = hist;
+    } else {
+      if (!d.orig) { d.orig = d.punches; d.origMissed = d.missed || []; }
+      d.edits = (d.edits || []).concat([{ at: new Date().toISOString(), by: currentUser(), from: d.punches, to: newSegs, note: note || "" }]);
+      d.punches = newSegs; d.missed = [];
+    }
+    var r2 = E.recheck(r, st.employees, null, st.exceptions);
+    st.report = r2;
+    if (st.batch && st.batch.reports[r2.weekStart]) st.batch.reports[r2.weekStart] = r2;
+    return saveReport(r2);
+  }
+  function readPunchEditor(box) {
+    var segs = [], bad = false;
+    $all(".pe-row", box).forEach(function (row) {
+      var a = $(".pe-in", row).value, b = $(".pe-out", row).value;
+      if (!a && !b) return;
+      if (!a || !b) { bad = true; return; }
+      var s = E.hhmmToMin(a), e = E.hhmmToMin(b);
+      if (e <= s) e += 1440;
+      segs.push([s, e]);
+    });
+    segs.sort(function (x, y) { return x[0] - y[0]; });
+    for (var i = 1; i < segs.length; i++) if (segs[i][0] < segs[i - 1][1]) return { error: "Two punches overlap. Check the times." };
+    if (bad) return { error: "Each punch needs both an In and an Out time." };
+    return { segs: segs };
+  }
+
+  /* ---- printing: a print-ready page (opens in a new tab with the print dialog on the website) ---- */
+  var PRINT_CSS = "@page{size:letter landscape;margin:10mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}" +
+    "body{font-family:Arial,Helvetica,sans-serif;color:#18212B;margin:0;padding:14px;font-size:10px}" +
+    "h1{font-size:17px;margin:0 0 2px}.meta{color:#5A6573;margin-bottom:6px}.key{color:#B3261E;font-weight:bold;margin-bottom:8px}" +
+    "table{border-collapse:collapse;width:100%}th,td{border:1px solid #CCD2DA;padding:4px 5px;vertical-align:top;text-align:left}" +
+    "th{background:#142231;color:#fff;font-size:10px}thead{display:table-header-group}tr{page-break-inside:avoid}" +
+    ".nm b{font-size:10.5px}.id{color:#5A6573}.dept td{background:#EEF1F4;font-weight:bold;text-transform:uppercase;letter-spacing:.05em;color:#5A6573}" +
+    ".act{font-weight:bold;white-space:nowrap}.r{color:#B3261E}.sch{color:#6E7680}.note{color:#B3261E;font-weight:bold}.ed{color:#6B3FA8;font-weight:bold}.exc{color:#1F5E8C}" +
+    ".bad{background:#FBE3E0}.num{text-align:right;white-space:nowrap}.orig{color:#777}.new{color:#6B3FA8;font-weight:bold}" +
+    ".bar{display:flex;gap:10px;align-items:center;margin-bottom:10px}.bar button{font:inherit;font-size:13px;padding:6px 14px;cursor:pointer}@media print{.bar{display:none}}";
+  function printDoc(title, inner) {
+    return "<!doctype html><html><head><meta charset=\"utf-8\"><title>" + esc(title) + "</title><style>" + PRINT_CSS + "</style></head><body>" +
+      "<div class=\"bar\"><button onclick=\"window.print()\">Print</button><span style=\"color:#5A6573\">Tip: choose Landscape if your printer asks.</span></div>" + inner +
+      "<script>window.addEventListener('load',function(){setTimeout(function(){window.print()},300)});<\/script></body></html>";
+  }
+  function outPrint(html, filename) {
+    if (window.punchOpenHtml) { window.punchOpenHtml(html, filename); return; }
+    if (!st.dl) { setUp("Printing isn't available in this view.", "err"); return; }
+    st.dl.save({ filename: filename, data: html }).then(function () {
+      setUp("Saved " + filename + ". Open it and it will print.", "ok");
+    }).catch(function (e) { if (!e || e.code !== "declined") setUp((e && e.message) || "Couldn't save the print file.", "err"); });
+  }
+  function weekTitleHtml(r, title) {
+    return "<h1>" + esc(title) + "</h1><div class=\"meta\">Week " + esc(E.fmtDate(r.weekStart, true)) + " – " + esc(E.fmtDate(r.weekEnd, true)) +
+      " · " + esc(r.fileName || "") + " · printed " + esc(new Date().toLocaleString()) + "</div>";
+  }
+  function weekCellHtml(r, p, date, d) {
+    var sc = schedFor(r, p, date, d), s = sc.sched, h = "", cls = "";
+    var schedLine = s ? "Sched " + shortT(s.from) + " – " + shortT(s.till) : (sc.none ? "No schedule" : "Off");
+    if (d && d.punches.length) {
+      var a = d.punches[0][0], b = d.punches[d.punches.length - 1][1];
+      h += "<div class=\"act\"><span class=\"" + (d.early || d.notScheduled ? "r" : "") + "\">" + shortT(a) + "</span> – <span class=\"" + (d.late || d.notScheduled ? "r" : "") + "\">" + shortT(b) + "</span> <span class=\"sch\">" + hrs(d.worked) + "h</span></div>";
+      h += "<div class=\"sch\">" + schedLine + "</div>";
+      var notes = [];
+      if (d.early) notes.push("Early " + minsTxt(d.early));
+      if (d.late) notes.push("Late " + minsTxt(d.late));
+      if (d.over) notes.push("+" + hrs(d.over) + "h");
+      if (d.notScheduled) { notes.push("Not scheduled"); cls = "bad"; }
+      if (d.issues.some(function (i) { return i.type === "missed"; })) notes.push("Missed punch");
+      if (notes.length) h += "<div class=\"note\">" + notes.join(" · ") + "</div>";
+      if (d.edits && d.edits.length) h += "<div class=\"ed\">Edited (was " + esc((d.orig || []).map(function (x) { return shortT(x[0]) + "–" + shortT(x[1]); }).join(", ") || "incomplete") + ")</div>";
+    } else if (d) {
+      h += "<div class=\"note\">Missed punch</div><div class=\"sch\">" + schedLine + "</div>";
+    } else {
+      h += "<div class=\"sch\">" + (s ? "No punches" : "—") + "</div><div class=\"sch\">" + schedLine + "</div>";
+    }
+    if (sc.note) h += "<div class=\"exc\">" + esc(sc.note) + "</div>";
+    return "<td class=\"" + cls + "\">" + h + "</td>";
+  }
+  function printWeek() {
+    var r = st.report; if (!r) return;
+    var list = r.people.filter(personMatch).sort(function (a, b) { return (a.dept || "~").localeCompare(b.dept || "~") || a.name.localeCompare(b.name); });
+    var dates = weekDates(r), dm = dayMap(r), lastDept = null, body = "";
+    list.forEach(function (p) {
+      if (p.dept !== lastDept) { lastDept = p.dept; body += "<tr class=\"dept\"><td colspan=\"9\">" + esc(p.dept || "No department") + "</td></tr>"; }
+      body += "<tr><td class=\"nm\"><b>" + esc(p.name) + "</b><br><span class=\"id\">#" + esc(p.id) + "</span></td>" +
+        dates.map(function (date) { return weekCellHtml(r, p, date, dm[p.id + "|" + date]); }).join("") +
+        "<td class=\"num\"><b>" + hrs(p.workedWeek) + "</b>" + (p.schedWeek != null ? "<br><span class=\"sch\">/ " + hrs(p.schedWeek) + "</span>" : "") +
+        (p.schedWeek != null && p.workedWeek - p.schedWeek > 0.005 ? "<br><span class=\"note\">+" + hrs(p.workedWeek - p.schedWeek) + "h</span>" : "") + "</td></tr>";
+    });
+    var head = "<tr><th style=\"width:13%\">Employee</th>" + dates.map(function (d) { var x = E.fmtDate(d).split("/"); return "<th>" + DAYS[E.weekday(d)] + " " + x[0] + "/" + x[1] + "</th>"; }).join("") + "<th class=\"num\" style=\"width:7%\">Worked / sched</th></tr>";
+    var html = printDoc("Week " + r.weekStart, weekTitleHtml(r, "Weekly hours vs schedule") +
+      "<div class=\"key\">Red = came in before the schedule, left after it, or worked a day not on the schedule. Purple = time was edited.</div>" +
+      "<table><thead>" + head + "</thead><tbody>" + body + "</tbody></table>");
+    outPrint(html, "Week_" + r.weekStart + "_hours.html");
+  }
+  function printEdits() {
+    var r = st.report; if (!r) return;
+    var info = {}; r.people.forEach(function (p) { info[p.id] = p; });
+    var days = r.days.filter(function (d) { return d.edits && d.edits.length; })
+      .sort(function (a, b) { return info[a.id].name.localeCompare(info[b.id].name) || a.date.localeCompare(b.date); });
+    if (!days.length) return;
+    var grace = Number((r.settings || {}).graceMin || 0);
+    function segList(segs, sched, cls) {
+      return (segs || []).map(function (s) {
+        var a = "<span class=\"" + (sched && s[0] < sched.from - grace ? "r" : "") + "\">" + E.fmtMin(s[0]) + "</span>", b = "<span class=\"" + (sched && s[1] > sched.till + grace ? "r" : "") + "\">" + E.fmtMin(s[1]) + "</span>";
+        return "<div class=\"" + cls + "\">" + a + " – " + b + "</div>";
+      }).join("");
+    }
+    var body = days.map(function (d) {
+      var p = info[d.id], last = d.edits[d.edits.length - 1];
+      var sch = d.sched ? E.fmtMin(d.sched.from) + " – " + E.fmtMin(d.sched.till) + "<br><span class=\"sch\">" + hrs(d.sched.hours) + " hrs</span>" : "<span class=\"r\">" + (p.inSchedule ? "Not scheduled" : "No schedule") + "</span>";
+      var origHrs = (d.orig || []).reduce(function (t, s) { return t + s[1] - s[0]; }, 0) / 60;
+      return "<tr><td class=\"nm\"><b>" + esc(p.name) + "</b><br><span class=\"id\">#" + esc(p.id) + (p.dept ? " · " + esc(p.dept) : "") + "</span></td>" +
+        "<td>" + DAYS[E.weekday(d.date)] + " " + E.fmtDate(d.date) + "</td><td>" + sch + "</td>" +
+        "<td>" + (segList(d.orig, d.sched, "orig") || "<span class=\"orig\">Incomplete punch</span>") + "<span class=\"sch\">" + hrs(origHrs) + " hrs</span></td>" +
+        "<td>" + (segList(d.punches, d.sched, "new") || "<span class=\"new\">none</span>") + "<span class=\"sch\">" + hrs(d.worked) + " hrs</span></td>" +
+        "<td class=\"num\"><b>" + (d.worked - origHrs >= 0 ? "+" : "") + hrs(d.worked - origHrs) + "</b></td>" +
+        "<td>" + esc(d.edits.map(function (x) { return x.note; }).filter(Boolean).join("; ")) + "</td>" +
+        "<td>" + esc(last.by || "") + "<br><span class=\"sch\">" + esc(new Date(last.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })) + "</span></td></tr>";
+    }).join("");
+    var html = printDoc("Edits " + r.weekStart, weekTitleHtml(r, "Edited punches") +
+      "<div class=\"key\">Original time clock punches next to the changed times. Red = outside the schedule.</div>" +
+      "<table><thead><tr><th>Employee</th><th>Date</th><th>Scheduled</th><th>Original punches</th><th>Changed to</th><th class=\"num\">Hours change</th><th>Reason</th><th>Edited by</th></tr></thead><tbody>" + body + "</tbody></table>");
+    outPrint(html, "Week_" + r.weekStart + "_edits.html");
   }
 
   /* ---------------- Excel export ---------------- */
@@ -1711,6 +2001,22 @@ var Engine = (function () {
         });
       w4.columns.forEach(function (c, i) { c.width = [12, 30, 16, 12, 6, 44, 12, 16, 30, 60][i]; });
 
+      var edDays = r.days.filter(function (d) { return d.edits && d.edits.length; });
+      if (edDays.length) {
+        var w6 = wb.addWorksheet("Edits");
+        w6.addRow(["Employee Id", "Name", "Date", "Day", "Scheduled", "Original punches", "Changed to", "Reason", "Edited by", "Edited at"]);
+        head(w6, 1);
+        edDays.forEach(function (d) {
+          var p = byId[d.id], last = d.edits[d.edits.length - 1];
+          var row = w6.addRow([+p.id || p.id, p.name, dt(d.date), DAYS[E.weekday(d.date)],
+            d.sched ? E.fmtMin(d.sched.from) + " – " + E.fmtMin(d.sched.till) : "Not scheduled",
+            (d.orig || []).map(function (s) { return E.fmtMin(s[0]) + "–" + E.fmtMin(s[1]); }).join("; ") || "incomplete",
+            d.punches.map(function (s) { return E.fmtMin(s[0]) + "–" + E.fmtMin(s[1]); }).join("; "),
+            d.edits.map(function (x) { return x.note; }).filter(Boolean).join("; "), last.by || "", new Date(last.at).toLocaleString()]);
+          row.getCell(3).numFmt = "mm/dd/yyyy";
+        });
+        w6.columns.forEach(function (c, i) { c.width = [12, 28, 12, 6, 22, 34, 34, 40, 14, 22][i]; });
+      }
       var w5 = wb.addWorksheet("Rules used");
       var S = r.settings || st.settings;
       [
@@ -1736,7 +2042,7 @@ var Engine = (function () {
     }).catch(function (e) {
       if (e && e.code === "declined") return;
       setUp((e && e.message) || "Couldn't build the Excel file.", "err");
-    }).then(function () { btn.disabled = false; btn.textContent = "Download Excel report"; });
+    }).then(function () { btn.disabled = false; btn.textContent = "Download Excel"; });
   }
 
   /* ---------------- schedules ---------------- */
@@ -2164,6 +2470,10 @@ var Engine = (function () {
       var t = e.target.closest("[data-filter]");
       if (t) { st.filter = t.dataset.filter; renderReportShell(); renderReportTable(); return; }
       if (e.target.closest("#xlsxBtn")) { downloadXlsx(); return; }
+      if (e.target.closest("#printWeekBtn")) { printWeek(); return; }
+      if (e.target.closest("#printEditsBtn")) { printEdits(); return; }
+      var v2 = e.target.closest("[data-view2]");
+      if (v2) { st.repView = v2.dataset.view2; if (st.repView === "grid" && st.filter === "flagged") st.filter = "everyone"; renderReportShell(); renderReportTable(); return; }
       var bt = e.target.closest("[data-batch]");
       if (bt) { showBatchWeek(bt.dataset.batch); return; }
       if (e.target.id === "batchClose") { st.batch = null; renderReportShell(); return; }
@@ -2183,6 +2493,31 @@ var Engine = (function () {
     });
     $("#repShell").addEventListener("input", function (e) { if (e.target.id === "repSearch") { st.q = e.target.value.trim(); renderReportTable(); } });
     $("#repTable").addEventListener("click", function (e) {
+      var ed = e.target.closest("[data-editday]");
+      if (ed) { st.editDay = st.editDay === ed.dataset.editday ? null : ed.dataset.editday; renderReportTable(); var bx = $(".day-ed"); if (bx) { var f = $(".pe-in", bx); if (f) f.focus(); } return; }
+      var pe = e.target.closest("[data-pe]");
+      if (pe) {
+        var box = pe.closest(".day-ed"), act = pe.dataset.pe, msgEl = $(".pe-msg", box);
+        if (act === "add") { $(".pe-rows", box).insertAdjacentHTML("beforeend", punchRowHtml(null, null)); return; }
+        if (act === "rm") { pe.closest(".pe-row").remove(); return; }
+        if (act === "cancel") { st.editDay = null; renderReportTable(); return; }
+        var key = box.dataset.edfor;
+        if (act === "restore") {
+          msgEl.className = "msg pe-msg"; msgEl.textContent = "Restoring…";
+          applyDayEdit(key, null, "", true).then(function () { st.editDay = null; renderReportShell(); renderReportTable(); });
+          return;
+        }
+        if (act === "save") {
+          var res = readPunchEditor(box);
+          if (res.error) { msgEl.className = "msg err pe-msg"; msgEl.textContent = res.error; return; }
+          msgEl.className = "msg pe-msg"; msgEl.textContent = "Saving…";
+          applyDayEdit(key, res.segs, $(".pe-note", box).value.trim(), false).then(function (ok) {
+            st.editDay = null; renderReportShell(); renderReportTable();
+            setUp(ok || !st.db ? "Change saved and the week was rechecked." : "Change made, but it couldn't be saved. Try again.", ok || !st.db ? "ok" : "err");
+          }).catch(function (er) { msgEl.className = "msg err pe-msg"; msgEl.textContent = (er && er.message) || "Couldn't save."; });
+          return;
+        }
+      }
       var t = e.target.closest("[data-toggle]");
       if (t) { var id = t.dataset.toggle; st.open[id] = !st.open[id]; renderReportTable(); var b = $("[data-toggle=\"" + id + "\"]"); if (b) b.focus({ preventScroll: true }); }
     });
